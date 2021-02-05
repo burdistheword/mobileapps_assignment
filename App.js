@@ -1,30 +1,26 @@
 import React, { Component } from 'react';
-import { View, Text, Button } from 'react-native';
+import HomeScreen from './screens/home';
+import Login from './screens/login';
+import Signup from './screens/signup';
+import Profile from './screens/profile';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
 
 class App extends Component{
-
-
-  sayHello = () => {
-    console.log("Hello");
-    return fetch('http://api.icndb.com/jokes/random')
-      .then((res) => res.json())
-      .then((rjson) => {
-        console.log(rjson)
-      })
-      .catch((e) => {
-        console.error(e)
-      })
-  }
-
-  render(){
-    return (
-      <View>
-        <Text>Hello</Text>
-        <Text>Hello</Text>
-        <Button title="Hello" onPress={this.sayHello} />
-      </View>
-    );
-  }
+ render(){
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
+        <Stack.Screen name="Home" component={HomeScreen}/>
+        <Stack.Screen name="Signup" component={Signup}/>
+        <Stack.Screen name="Profile" component={Profile}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
-
+  
+}
 export default App;
