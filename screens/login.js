@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import HomeNav from './homenav';
 import { View, Text, Button, TextInput, Alert, StyleSheet, ToastAndroid, ImageBackground } from 'react-native';
 import LoginBackground from './photos/logintest.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -45,7 +46,7 @@ class Login extends Component{
             await AsyncStorage.setItem('@session_token', jsonValueST)
             await AsyncStorage.setItem('@user_id', jsonValueID)  
         ToastAndroid.show('Login successful!',ToastAndroid.SHORT)
-        this.props.navigation.navigate('Home')
+        this.props.navigation.navigate('HomeN')
         
       }
 
