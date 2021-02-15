@@ -8,7 +8,7 @@ class Profile extends Component{
           <Text>Home Screen</Text>
           <Button
             title="Logout"
-            onPress={() => this.props.navigation.navigate('Login')}/>
+            onPress={() => this.props.navigation.navigate('LoginStack')}/>
         </View>
     );
   }
