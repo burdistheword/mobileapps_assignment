@@ -10,8 +10,8 @@ class Login extends Component{
         super(props);
 
         this.state={
-            email:'',
-            password:''
+            email:'jackburdis@gmail.com',
+            password:'password'  
         }
 
     }
@@ -40,15 +40,77 @@ class Login extends Component{
     )
     .then(
       async (rjson)=>{
-            const jsonValueST = JSON.stringify(rjson.token)
+            const jsonValueST = rjson.token
             const jsonValueID = JSON.stringify(rjson.id)
             await AsyncStorage.setItem('@session_token', jsonValueST)
             await AsyncStorage.setItem('@user_id', jsonValueID)  
-        ToastAndroid.show('Login successful!',ToastAndroid.SHORT)
-        this.props.navigation.navigate('Home')
+            return [jsonValueID,jsonValueST]
         
       }
 
+    )
+    .then(
+      async (loginInfo)=>{
+        let [ID,ST] = loginInfo
+        console.log(ID,ST);
+        fetch('http://10.0.2.2:3333/api/1.0.0/user/'+ ID, {
+          method: 'GET',
+          headers: {
+          'Content-Type': 'application/json',
+          "X-Authorization": ST
+
+        },
+        
+      })
+      .then(
+        (response)=>{
+          if (response.status===200){
+              return response.json();  
+          }
+          else if (response.status===401){
+            throw 'Unauthorized User Details'
+          }
+          else if (response.status===404){
+            throw 'Not Found'
+          }
+          else {
+            throw 'Server Error'
+          }
+        }
+      )
+      .then(
+        async (rjson)=>{
+          //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+          const jsonFirstName = JSON.stringify(rjson.first_name)
+          const jsonLastName = JSON.stringify(rjson.last_name)
+          const jsonEmail = JSON.stringify(rjson.email)
+          const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
+          const jsonReview = JSON.stringify(rjson.reviews)
+          const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
+
+          await AsyncStorage.setItem('@first_name', jsonFirstName)
+          await AsyncStorage.setItem('@last_name', jsonLastName)
+          await AsyncStorage.setItem('@email', jsonEmail) 
+          await AsyncStorage.setItem('@favourite_location',jsonFavLoc)
+          await AsyncStorage.setItem('@reviews',jsonReview)
+          await AsyncStorage.setItem('@liked_reviews',jsonLikedRev)
+          await AsyncStorage.setItem('@password',this.state.password)
+          console.log(jsonReview)
+        }
+      )  
+      .catch(
+        (error)=>{
+          console.log(error)
+          ToastAndroid.show(error,ToastAndroid.SHORT)
+        }
+      )
+      }
+    )
+    .then(
+      ()=>{
+        ToastAndroid.show('Login successful!',ToastAndroid.SHORT)
+        this.props.navigation.navigate('Home')
+      }
     )
     .catch(
       (error)=>{
@@ -56,7 +118,8 @@ class Login extends Component{
         ToastAndroid.show(error,ToastAndroid.SHORT)
       }
     )
-  }  
+  }
+  
   render(){
     return (
       <View style={styles.container}>

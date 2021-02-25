@@ -40,7 +40,7 @@ export function DrawerContent(props) {
         fetch('http://10.0.2.2:3333/api/1.0.0/user/logout', {
             method: 'POST',
             headers: {
-              "X-Authorization": JSON.parse(await AsyncStorage.getItem('@session_token'))
+              "X-Authorization": await AsyncStorage.getItem('@session_token')
             },
           })
           .then(
@@ -65,56 +65,13 @@ export function DrawerContent(props) {
           )
       }
 
-      profile= async ()=>{
-        fetch('http://10.0.2.2:3333/api/1.0.0/user/'+ JSON.parse(await AsyncStorage.getItem('@user_id')), {
-          method: 'GET',
-          headers: {
-          'Content-Type': 'application/json',
-          "X-Authorization": JSON.parse(await AsyncStorage.getItem('@session_token'))
-
-        },
-        
-      })
-      .then(
-        (response)=>{
-          if (response.status===200){
-
-            //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-            const jsonFirstName = JSON.stringify(response.first_name)
-            const jsonLastName = JSON.stringify(response.last_name)
-            const jsonEmail = JSON.stringify(response.email)
-            this.setState({first_name:jsonFirstName})
-            this.setState({last_name:jsonLastName})
-            this.setState({email:jsonEmail})
-            ToastAndroid.show(email,ToastAndroid.SHORT)
-          }
-          else if (response.status===401){
-            throw 'Unauthorized'
-          }
-          else if (response.status===404){
-            throw 'Not Found'
-          }
-          else {
-            throw 'Server Error'
-          }
-        }
-      )
-      .catch(
-        (error)=>{
-          console.log(error)
-          ToastAndroid.show(error,ToastAndroid.SHORT)
-        }
-      )
-  }
-      
-
     return (
         <View style={{flex:1}}>
                  <Text>This is a test!</Text>
                  <Drawer.Section style={styles.container}>
-                     <Button style={styles.loginButton} title="Logout" onPress={logout} />
-                     <Button style={styles.loginButton} title="Profile" onPress={profile}/>
                      <Button style={styles.loginButton} title="Home" onPress={()=>props.navigation.navigate('Home')}/>
+                     <Button style={styles.loginButton} title="Profile" onPress={()=>props.navigation.navigate('Profile')}/>
+                     <Button style={styles.loginButton} title="Logout" onPress={logout} />
                  </Drawer.Section>
         </View>
     );

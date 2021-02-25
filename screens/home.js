@@ -1,21 +1,19 @@
 import React, { Component } from 'react';
-import { View, Text, Button, TextInput, Alert, StyleSheet, ToastAndroid } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Icon from 'react-native-vector-icons/Octicons';
+import FeedScreen from './feed';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+
+const Tab = createBottomTabNavigator();
 
 class HomeScreen extends Component{
 
   render(){
     return(
-        <View>
-          <Text>Home Screen</Text>
-            <Button
-            title="Your Profile"
-            onPress={() => this.props.navigation.navigate('Profile')}/>
-            <Button
-            title="Drawer Open"
-            onPress={() => this.props.navigation.openDrawer()}/>
-        </View>
+        <Tab.Navigator>
+          <Tab.Screen name="Feed" component={FeedScreen}/>
+          <Tab.Screen name="Feed2" component={FeedScreen}/>
+          <Tab.Screen name="Feed3" component={FeedScreen}/>
+          <Tab.Screen name="Feed4" component={FeedScreen}/>
+        </Tab.Navigator>
     );
   }
 }
