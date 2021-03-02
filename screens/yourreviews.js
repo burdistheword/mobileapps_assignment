@@ -16,7 +16,7 @@ class YourReviews extends Component {
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            this.setState({isLoading: true})
+            this.setState({ isLoading: true })
             fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
                 method: 'GET',
                 headers: {
@@ -45,9 +45,9 @@ class YourReviews extends Component {
                     async (rjson) => {
                         //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
                         const jsonReview = JSON.stringify(rjson.reviews)
-                        
+
                         await AsyncStorage.setItem('@reviews', jsonReview)
-                        
+
                         this.setState({ reviews: rjson.reviews })
 
                         this.setState({ isLoading: false })
@@ -76,32 +76,35 @@ class YourReviews extends Component {
             )
         }
         else {
-                return (
-                    <SafeAreaView style={styles.container}>
-                        <TouchableOpacity onPress={() => { this.props.navigation.toggleDrawer() }}>
-                            <Image
-                                style={{ width: 50, height: 50 }}
-                                source={require('./photos/Hamburger_icon.svg.png')}
-                            />
-                        </TouchableOpacity>
-                        <FlatList
-                            data={this.state.reviews}
-                            renderItem={({ item }) => {
-                                return (
-                                    <View>
-                                        <TouchableOpacity onPress={() => this.props.navigation.navigate("Review")}>
-                                            <View style={styles.item}>
-                                                <Text>{item.location.location_name}</Text>
-                                                <Text>{item.review.review_id}</Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    </View>
-                                )
-                            }}
-                            keyExtractor={item => item.review.review_id.toString()}
+            return (
+                <SafeAreaView style={styles.container}>
+                    <TouchableOpacity onPress={() => { this.props.navigation.toggleDrawer() }}>
+                        <Image
+                            style={{ width: 50, height: 50 }}
+                            source={require('./photos/Hamburger_icon.svg.png')}
                         />
-                    </SafeAreaView>
-                );
+                    </TouchableOpacity>
+                    <FlatList
+                        data={this.state.reviews}
+                        renderItem={({ item }) => {
+                            return (
+                                <View>
+                                    <TouchableOpacity onPress={() => this.props.navigation.navigate("Review", {
+                                        location_id: item.location.location_id, review_body: item.review.review_body, review_id: item.review.review_id,
+                                        overall_rating: item.review.overall_rating, price_rating: item.review.price_rating, quality_rating: item.review.quality_rating, clenliness_rating: item.review.clenliness_rating
+                                    })}>
+                                        <View style={styles.item}>
+                                            <Text>{item.location.location_name}</Text>
+                                            <Text>{item.review.review_id}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        }}
+                        keyExtractor={item => item.review.review_id.toString()}
+                    />
+                </SafeAreaView>
+            );
         }
     }
 }

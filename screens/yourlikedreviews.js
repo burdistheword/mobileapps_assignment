@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class YourLikedReviews extends Component {
@@ -44,11 +44,10 @@ class YourLikedReviews extends Component {
                 .then(
                     async (rjson) => {
                         //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-                        const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
-
-                        await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
-
                         this.setState({ liked_reviews: rjson.liked_reviews })
+
+                        const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
+                        await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
 
                         this.setState({ isLoading: false })
                     }
@@ -89,7 +88,10 @@ class YourLikedReviews extends Component {
                         renderItem={({ item }) => {
                             return (
                                 <View>
-                                    <TouchableOpacity onPress={() => this.props.navigation.navigate("Review")}>
+                                    <TouchableOpacity onPress={() => this.props.navigation.navigate("Review", {
+                                        location_id: item.location.location_id, review_body: item.review.review_body, review_id: item.review.review_id,
+                                        overall_rating: item.review.overall_rating, price_rating: item.review.price_rating, quality_rating: item.review.quality_rating, clenliness_rating: item.review.clenliness_rating
+                                    })}>
                                         <View style={styles.item}>
                                             <Text>{item.location.location_name}</Text>
                                             <Text>{item.review.review_id}</Text>

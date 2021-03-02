@@ -65,8 +65,7 @@ class EditReview extends Component {
         (response) => {
           if (response.status === 200) {
             ToastAndroid.show('Changes Saved!',ToastAndroid.SHORT)
-            this.props.navigation.navigate('Review',{refresh: true, new_overall_rating:this.state.overall_rating, new_price_rating: this.state.price_rating,
-            new_quality_rating: this.state.quality_rating, new_clenliness_rating: this.state.clenliness_rating, new_review_body: this.state.review_body});
+            this.props.navigation.navigate('Location')
           }
           else if (response.status === 400) {
             throw 'Bad Request'

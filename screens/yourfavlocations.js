@@ -89,7 +89,7 @@ class YourFavLocations extends Component {
                             renderItem={({ item }) => {
                                 return (
                                     <View>
-                                        <TouchableOpacity onPress={() => this.props.navigation.navigate("Location")}>
+                                        <TouchableOpacity onPress={() => this.props.navigation.navigate("Location", {location_id: item.location_id})}>
                                             <View style={styles.item}>
                                                 <Text>{item.location_id}</Text>
                                             </View>

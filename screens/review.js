@@ -22,6 +22,7 @@ class Review extends Component {
             isLoading: true,
             user_id: '',
             totalLikes: 0,
+            liked_reviews: [],
             user_liked: []
         }
     }
@@ -35,7 +36,6 @@ class Review extends Component {
         while (i < arrayLength) {
             if (userReviews[i].review.review_id == revID) {
                 this.setState({ yourReview: true })
-                console.log(this.state.user_reviews)
             }
             i++;
         }
@@ -82,87 +82,127 @@ class Review extends Component {
     }
 
     likeReview = async () => {
-        
-        if (this.state.user_liked.includes(this.state.user_id)) {
-            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
-                },
-                body: JSON.stringify({"loc_id":this.state.location_id,"rev_id":this.state.review_id})
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            var array = [...this.state.user_liked];
-                            var index = array.indexOf(this.state.user_id)
-                            if (index !== -1){
-                                array.splice(index,1)
-                                this.setState({ user_liked: array })
-                            }
-                            this.setState({totalLikes:this.state.totalLikes - 1})
-                        }
-                        else if (response.status === 401) {
-                            throw 'Unathorised'
-                        }
-                        else if (response.status === 403) {
-                            throw 'Forbidden'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
+
+        fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-Authorization": await AsyncStorage.getItem('@session_token')
+
+            },
+        })
+            .then(
+                (response) => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                    else if (response.status === 401) {
+                        throw 'Unauthorized User Details'
+                    }
+                    else if (response.status === 404) {
+                        throw 'Not Found'
+                    }
+                    else {
+                        throw 'Server Error'
+                    }
+                }
+            )
+            .then(
+                async (rjson) => {
+                    //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+                    this.setState({ liked_reviews: rjson.liked_reviews })
+                    console.log('justbeforelikescript')
+                    var i;
+                    var noMatchCount = 0;
+                    for (i = 0; i < this.state.liked_reviews.length; i++) {
+                        if (this.state.liked_reviews[i].review.review_id == this.state.review_id) {
+                            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                                },
+                                body: JSON.stringify({ "loc_id": this.state.location_id, "rev_id": this.state.review_id })
+                            })
+                                .then(
+                                    (response) => {
+                                        if (response.status === 200) {
+                                            console.log('Unliked')
+                                            ToastAndroid.show('Unliked', ToastAndroid.SHORT)
+                                        }
+                                        else if (response.status === 401) {
+                                            throw 'Unathorised'
+                                        }
+                                        else if (response.status === 403) {
+                                            throw 'Forbidden'
+                                        }
+                                        else if (response.status === 404) {
+                                            throw 'Not Found'
+                                        }
+                                        else {
+                                            throw 'Server Error'
+                                        }
+                                    }
+                                )
+                                .catch(
+                                    (error) => {
+                                        console.log(error)
+                                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                                    }
+                                )
+
                         }
                         else {
-                            throw 'Server Error'
+                            noMatchCount = noMatchCount + 1;
                         }
+                        if (noMatchCount == this.state.liked_reviews.length) {
+                            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                                },
+                                body: JSON.stringify({ "loc_id": this.state.location_id, "rev_id": this.state.review_id })
+                            })
+                                .then(
+                                    (response) => {
+                                        if (response.status === 200) {
+                                            console.log('Liked')
+                                            ToastAndroid.show('Liked', ToastAndroid.SHORT)
+                                        }
+                                        else if (response.status === 400) {
+                                            throw 'Bad Request'
+                                        }
+                                        else if (response.status === 401) {
+                                            throw 'Unathorised'
+                                        }
+                                        else if (response.status === 404) {
+                                            throw 'Not Found'
+                                        }
+                                        else {
+                                            throw 'Server Error'
+                                        }
+                                    }
+                                )
+                                .catch(
+                                    (error) => {
+                                        console.log(error)
+                                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                                    }
+                                )
+                        }
+
                     }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
-        }
-        else {
-            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
-                },
-                body: JSON.stringify({"loc_id":this.state.location_id,"rev_id":this.state.review_id})
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            this.setState(prevState => ({
-                                user_liked: [...prevState.user_liked
-                                    , this.state.user_id]
-                              }))
-                            this.setState({totalLikes:this.state.totalLikes + 1})
-                        }
-                        else if (response.status === 400) {
-                            throw 'Bad Request'
-                        }
-                        else if (response.status === 401) {
-                            throw 'Unathorised'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
-                        }
-                        else {
-                            throw 'Server Error'
-                        }
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
-        }
+
+                }
+            )
+            .catch(
+                (error) => {
+                    console.log(error)
+                    ToastAndroid.show(error, ToastAndroid.SHORT)
+                }
+            )
+
     }
 
     async componentDidMount() {
@@ -172,14 +212,13 @@ class Review extends Component {
             console.log(await AsyncStorage.getItem('@user_id'))
             const us_id = await AsyncStorage.getItem('@user_id')
             const loc_id = this.props.route.params.location_id;
-            const rev_body = JSON.stringify(this.props.route.params.review_body);
+            const rev_body = this.props.route.params.review_body;
             const rev_id = JSON.stringify(this.props.route.params.review_id);
             const ov_rating = this.props.route.params.overall_rating;
             const pr_rating = this.props.route.params.price_rating;
             const qu_rating = this.props.route.params.quality_rating;
             const cl_rating = this.props.route.params.clenliness_rating;
             const user_rev = JSON.parse(await AsyncStorage.getItem('@reviews'))
-            var refresh = this.props.route.params.refresh;
 
             this.setState({ user_id: us_id })
             console.log(this.state.user_id)
@@ -193,19 +232,6 @@ class Review extends Component {
             this.setState({ user_reviews: user_rev })
             this.isYourReview();
             this.setState({ isLoading: false })
-            if (refresh) {
-                const ov_rating = this.props.route.params.new_overall_rating;
-                const pr_rating = this.props.route.params.new_rice_rating;
-                const qu_rating = this.props.route.params.new_quality_rating;
-                const cl_rating = this.props.route.params.new_clenliness_rating;
-                const rev_body = JSON.stringify(this.props.route.params.new_review_body);
-
-                this.setState({ overall_rating: ov_rating })
-                this.setState({ price_rating: pr_rating })
-                this.setState({ quality_rating: qu_rating })
-                this.setState({ clenliness_rating: cl_rating })
-                this.setState({ review_body: rev_body })
-            }
         });
     }
 
@@ -235,7 +261,8 @@ class Review extends Component {
                 return (
                     <View>
                         <Text>Your Review!</Text>
-                        <Text>{this.location_id}</Text>
+                        <Text>{this.state.location_id}</Text>
+                        <Text>Review ID: {this.state.review_id}</Text>
                         <Text>Total Likes : {this.state.totalLikes}</Text>
                         <Text>Have you liked : {JSON.stringify(this.state.user_liked)}</Text>
                         <AirbnbRating
@@ -266,14 +293,14 @@ class Review extends Component {
                             overall_rating: this.state.overall_rating, quality_rating: this.state.quality_rating, price_rating: this.state.price_rating, clenliness_rating: this.state.clenliness_rating, review_body: this.state.review_body
                         })} />
                         <Button title="Delete Review" onPress={() => this.deleteReview()} />
-                        <Button title="Like Review" onPress={this.likeReview}/>
+                        <Button title="Like Review" onPress={this.likeReview} />
                     </View>
                 )
             }
             else {
                 return (
                     <View>
-                        <Text>{this.location_id}</Text>
+                        <Text>{this.state.location_id}</Text>
                         <Text>Total Likes : {this.state.totalLikes}</Text>
                         <Text>Have you liked : {JSON.stringify(this.state.user_liked)}</Text>
                         <AirbnbRating
@@ -301,7 +328,7 @@ class Review extends Component {
                             isDisabled={true}
                         />
                         <Text>{this.state.review_body}</Text>
-                        <Button title="Like Review" onPress={this.likeReview}/>
+                        <Button title="Like Review" onPress={this.likeReview} />
                     </View>
                 )
             }
