@@ -44,6 +44,7 @@ class Login extends Component{
             const jsonValueID = JSON.stringify(rjson.id)
             await AsyncStorage.setItem('@session_token', jsonValueST)
             await AsyncStorage.setItem('@user_id', jsonValueID)  
+            console.log(await AsyncStorage.getItem('@user_id'))
             return [jsonValueID,jsonValueST]
         
       }

@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import Home from './home';
-import Profile from './profile';
 import { Text, View, Button,StyleSheet,ToastAndroid } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DrawerRouter, NavigationContainer } from '@react-navigation/native';
@@ -71,6 +69,9 @@ export function DrawerContent(props) {
                  <Drawer.Section style={styles.container}>
                      <Button style={styles.loginButton} title="Home" onPress={()=>props.navigation.navigate('Home')}/>
                      <Button style={styles.loginButton} title="Profile" onPress={()=>props.navigation.navigate('Profile')}/>
+                     <Button style={styles.loginButton} title="Your Reviews" onPress={()=>props.navigation.navigate('YourReviews')} />
+                     <Button style={styles.loginButton} title="Your Liked Reviews" onPress={()=>props.navigation.navigate('YourLikedReviews')} />
+                     <Button style={styles.loginButton} title="Your Fav Locations" onPress={()=>props.navigation.navigate('YourFavLocations')} />
                      <Button style={styles.loginButton} title="Logout" onPress={logout} />
                  </Drawer.Section>
         </View>

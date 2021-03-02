@@ -19,7 +19,10 @@ class Review extends Component {
             review_id: 0,
             user_reviews: [],
             yourReview: false,
-            isLoading: true
+            isLoading: true,
+            user_id: '',
+            totalLikes: 0,
+            user_liked: []
         }
     }
 
@@ -78,10 +81,96 @@ class Review extends Component {
             )
     }
 
+    likeReview = async () => {
+        
+        if (this.state.user_liked.includes(this.state.user_id)) {
+            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                },
+                body: JSON.stringify({"loc_id":this.state.location_id,"rev_id":this.state.review_id})
+            })
+                .then(
+                    (response) => {
+                        if (response.status === 200) {
+                            var array = [...this.state.user_liked];
+                            var index = array.indexOf(this.state.user_id)
+                            if (index !== -1){
+                                array.splice(index,1)
+                                this.setState({ user_liked: array })
+                            }
+                            this.setState({totalLikes:this.state.totalLikes - 1})
+                        }
+                        else if (response.status === 401) {
+                            throw 'Unathorised'
+                        }
+                        else if (response.status === 403) {
+                            throw 'Forbidden'
+                        }
+                        else if (response.status === 404) {
+                            throw 'Not Found'
+                        }
+                        else {
+                            throw 'Server Error'
+                        }
+                    }
+                )
+                .catch(
+                    (error) => {
+                        console.log(error)
+                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                    }
+                )
+        }
+        else {
+            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                },
+                body: JSON.stringify({"loc_id":this.state.location_id,"rev_id":this.state.review_id})
+            })
+                .then(
+                    (response) => {
+                        if (response.status === 200) {
+                            this.setState(prevState => ({
+                                user_liked: [...prevState.user_liked
+                                    , this.state.user_id]
+                              }))
+                            this.setState({totalLikes:this.state.totalLikes + 1})
+                        }
+                        else if (response.status === 400) {
+                            throw 'Bad Request'
+                        }
+                        else if (response.status === 401) {
+                            throw 'Unathorised'
+                        }
+                        else if (response.status === 404) {
+                            throw 'Not Found'
+                        }
+                        else {
+                            throw 'Server Error'
+                        }
+                    }
+                )
+                .catch(
+                    (error) => {
+                        console.log(error)
+                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                    }
+                )
+        }
+    }
+
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
             this.setState({ isLoading: true })
             this.setState({ yourReview: false })
+            console.log(await AsyncStorage.getItem('@user_id'))
+            const us_id = await AsyncStorage.getItem('@user_id')
             const loc_id = this.props.route.params.location_id;
             const rev_body = JSON.stringify(this.props.route.params.review_body);
             const rev_id = JSON.stringify(this.props.route.params.review_id);
@@ -92,6 +181,8 @@ class Review extends Component {
             const user_rev = JSON.parse(await AsyncStorage.getItem('@reviews'))
             var refresh = this.props.route.params.refresh;
 
+            this.setState({ user_id: us_id })
+            console.log(this.state.user_id)
             this.setState({ location_id: loc_id })
             this.setState({ review_body: rev_body })
             this.setState({ review_id: rev_id })
@@ -145,6 +236,8 @@ class Review extends Component {
                     <View>
                         <Text>Your Review!</Text>
                         <Text>{this.location_id}</Text>
+                        <Text>Total Likes : {this.state.totalLikes}</Text>
+                        <Text>Have you liked : {JSON.stringify(this.state.user_liked)}</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.overall_rating}
@@ -173,6 +266,7 @@ class Review extends Component {
                             overall_rating: this.state.overall_rating, quality_rating: this.state.quality_rating, price_rating: this.state.price_rating, clenliness_rating: this.state.clenliness_rating, review_body: this.state.review_body
                         })} />
                         <Button title="Delete Review" onPress={() => this.deleteReview()} />
+                        <Button title="Like Review" onPress={this.likeReview}/>
                     </View>
                 )
             }
@@ -180,6 +274,8 @@ class Review extends Component {
                 return (
                     <View>
                         <Text>{this.location_id}</Text>
+                        <Text>Total Likes : {this.state.totalLikes}</Text>
+                        <Text>Have you liked : {JSON.stringify(this.state.user_liked)}</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.overall_rating}
@@ -205,6 +301,7 @@ class Review extends Component {
                             isDisabled={true}
                         />
                         <Text>{this.state.review_body}</Text>
+                        <Button title="Like Review" onPress={this.likeReview}/>
                     </View>
                 )
             }

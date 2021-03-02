@@ -8,6 +8,10 @@ import Location from './screens/location';
 import AddReview from './screens/addreview';
 import Review from './screens/review';
 import EditReview from './screens/editreview'
+import YourLikedReviews from './screens/yourlikedreviews';
+import YourReviews from './screens/yourreviews';
+import YourFavLocations from './screens/yourfavlocations';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { DrawerContent }  from './screens/drawercontent';
@@ -31,6 +35,9 @@ class App extends Component {
           <Drawer.Screen name="AddReview" component={AddReview}/>
           <Drawer.Screen name="Review" component={Review}/>
           <Drawer.Screen name="EditReview" component={EditReview}/>
+          <Drawer.Screen name="YourLikedReviews" component={YourLikedReviews}/>
+          <Drawer.Screen name="YourFavLocations" component={YourFavLocations}/>
+          <Drawer.Screen name="YourReviews" component={YourReviews}/>
         </Drawer.Navigator>
       </NavigationContainer>
 

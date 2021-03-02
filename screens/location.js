@@ -16,13 +16,17 @@ class Location extends Component {
             avg_quality_rating: 0,
             avg_clenliness_rating: 0,
             location_reviews: [],
-            isLoading: true
+            isLoading: true,
+            user_id: '',
+            user_favourited: []
         }
     }
 
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
+            const us_id = await AsyncStorage.getItem('@user_id')
+            this.setState({ user_id: us_id })
             this.setState({ isLoading: true })
             const loc_id = JSON.stringify(this.props.route.params.location_id);
             this.setState({ location_id: loc_id })
@@ -50,9 +54,9 @@ class Location extends Component {
                     async (rjson) => {
                         this.setState({ location_name: rjson.location_name })
                         this.setState({ avg_overall_rating: rjson.avg_overall_rating })
-                        this.setState({ avg_price_rating: rjson.avg_price_rating})
-                        this.setState({ avg_quality_rating: rjson.avg_quality_rating})
-                        this.setState({ avg_clenliness_rating: rjson.avg_clenliness_rating})
+                        this.setState({ avg_price_rating: rjson.avg_price_rating })
+                        this.setState({ avg_quality_rating: rjson.avg_quality_rating })
+                        this.setState({ avg_clenliness_rating: rjson.avg_clenliness_rating })
                         this.setState({ location_reviews: rjson.location_reviews })
                         this.setState({ isLoading: false })
                     }
@@ -113,6 +117,88 @@ class Location extends Component {
         this.focus();
     }
 
+    favourite = async () => {
+        if (this.state.user_favourited.includes(this.state.user_id)) {
+            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                },
+                body: JSON.stringify({"loc_id":this.state.location_id})
+            })
+                .then(
+                    (response) => {
+                        if (response.status === 200) {
+                            var array = [...this.state.user_favourited];
+                            var index = array.indexOf(this.state.user_id)
+                            if (index !== -1){
+                                array.splice(index,1)
+                                this.setState({ user_favourited: array })
+                            }
+                        }
+                        else if (response.status === 401) {
+                            throw 'Unathorised'
+                        }
+                        else if (response.status === 403) {
+                            throw 'Forbidden'
+                        }
+                        else if (response.status === 404) {
+                            throw 'Not Found'
+                        }
+                        else {
+                            throw 'Server Error'
+                        }
+                    }
+                )
+                .catch(
+                    (error) => {
+                        console.log(error)
+                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                    }
+                )
+        }
+        else {
+            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                },
+                body: JSON.stringify({"loc_id":this.state.location_id})
+            })
+                .then(
+                    (response) => {
+                        if (response.status === 200) {
+                            this.setState(prevState => ({
+                                user_favourited: [...prevState.user_favourited
+                                    , this.state.user_id]
+                              }))
+                        }
+                        else if (response.status === 400) {
+                            throw 'Bad Request'
+                        }
+                        else if (response.status === 401) {
+                            throw 'Unathorised'
+                        }
+                        else if (response.status === 404) {
+                            throw 'Not Found'
+                        }
+                        else {
+                            throw 'Server Error'
+                        }
+                    }
+                )
+                .catch(
+                    (error) => {
+                        console.log(error)
+                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                    }
+                )
+        }
+
+    }
+
     render() {
         if (this.state.isLoading) {
             return (<Text>Loading</Text>)
@@ -154,8 +240,10 @@ class Location extends Component {
                         renderItem={({ item }) => {
                             return (
                                 <View>
-                                    <TouchableOpacity onPress={() => this.props.navigation.navigate("Review", { location_id: this.state.location_id, review_body: item.review_body, review_id: item.review_id, 
-                                        overall_rating: item.overall_rating, price_rating: item.price_rating, quality_rating: item.quality_rating, clenliness_rating: item.clenliness_rating})}>
+                                    <TouchableOpacity onPress={() => this.props.navigation.navigate("Review", {
+                                        location_id: this.state.location_id, review_body: item.review_body, review_id: item.review_id,
+                                        overall_rating: item.overall_rating, price_rating: item.price_rating, quality_rating: item.quality_rating, clenliness_rating: item.clenliness_rating
+                                    })}>
                                         <View>
                                             <Text>{item.review_id}</Text>
                                             <Text>"{item.review_body}"</Text>
@@ -167,6 +255,7 @@ class Location extends Component {
                         keyExtractor={item => item.review_id.toString()}
                     />
                     <Button title="Add a Review" onPress={() => this.props.navigation.navigate("AddReview", { location_id: this.state.location_id })} />
+                    <Button title="Favourite Location" onPress={this.favourite} />
                 </View>
             )
         }
@@ -174,3 +263,4 @@ class Location extends Component {
 }
 
 export default Location;
+
