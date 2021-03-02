@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar } from 'react-native';
+import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class FeedScreen extends Component {
@@ -86,10 +87,18 @@ class FeedScreen extends Component {
             renderItem={({ item }) => {
               return (
                 <View>
-                  <TouchableOpacity onPress={() => this.props.navigation.navigate("Location",{location_id: item.location_id})}>
-                  <View style={styles.item}>
-                    <Text>{item.location_name}</Text>
-                  </View>
+                  <TouchableOpacity onPress={() => this.props.navigation.navigate("Location", { location_id: item.location_id })}>
+                    <View style={styles.item}>
+                      <Text>{item.location_id}</Text>
+                      <Text>{item.location_name}</Text>
+                      <AirbnbRating
+                        size={15}
+                        defaultRating={item.avg_overall_rating}
+                        showRating={false}
+                        isDisabled={true}
+                      />
+                      <Text>{item.location_town}</Text>
+                    </View>
                   </TouchableOpacity>
                 </View>
               )

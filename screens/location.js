@@ -118,84 +118,125 @@ class Location extends Component {
     }
 
     favourite = async () => {
-        if (this.state.user_favourited.includes(this.state.user_id)) {
-            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
-                },
-                body: JSON.stringify({"loc_id":this.state.location_id})
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            var array = [...this.state.user_favourited];
-                            var index = array.indexOf(this.state.user_id)
-                            if (index !== -1){
-                                array.splice(index,1)
-                                this.setState({ user_favourited: array })
-                            }
-                        }
-                        else if (response.status === 401) {
-                            throw 'Unathorised'
-                        }
-                        else if (response.status === 403) {
-                            throw 'Forbidden'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
+        fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-Authorization": await AsyncStorage.getItem('@session_token')
+
+            },
+        })
+            .then(
+                (response) => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                    else if (response.status === 401) {
+                        throw 'Unauthorized User Details'
+                    }
+                    else if (response.status === 404) {
+                        throw 'Not Found'
+                    }
+                    else {
+                        throw 'Server Error'
+                    }
+                }
+            )
+            .then(
+                async (rjson) => {
+                    //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+                    this.setState({ favourite_locations: rjson.favourite_locations })
+                    console.log('justbeforelikescript')
+                    var i;
+                    var noMatchCount = 0;
+                    for (i = 0; i < this.state.favourite_locations.length; i++) {
+                        if (this.state.favourite_locations[i].location_id == this.state.location_id) {
+                            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                                },
+                                body: JSON.stringify({ "loc_id": this.state.location_id })
+                            })
+                                .then(
+                                    (response) => {
+                                        if (response.status === 200) {
+                                            console.log('Unfaved')
+                                            ToastAndroid.show('Unfaved', ToastAndroid.SHORT)
+                                        }
+                                        else if (response.status === 401) {
+                                            throw 'Unathorised'
+                                        }
+                                        else if (response.status === 403) {
+                                            throw 'Forbidden'
+                                        }
+                                        else if (response.status === 404) {
+                                            throw 'Not Found'
+                                        }
+                                        else {
+                                            throw 'Server Error'
+                                        }
+                                    }
+                                )
+                                .catch(
+                                    (error) => {
+                                        console.log(error)
+                                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                                    }
+                                )
+
                         }
                         else {
-                            throw 'Server Error'
+                            noMatchCount = noMatchCount + 1;
                         }
+                        if (noMatchCount == this.state.favourite_locations.length) {
+                            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                                },
+                                body: JSON.stringify({ "loc_id": this.state.location_id})
+                            })
+                                .then(
+                                    (response) => {
+                                        if (response.status === 200) {
+                                            console.log('Faved')
+                                            ToastAndroid.show('Faved', ToastAndroid.SHORT)
+                                        }
+                                        else if (response.status === 400) {
+                                            throw 'Bad Request'
+                                        }
+                                        else if (response.status === 401) {
+                                            throw 'Unathorised'
+                                        }
+                                        else if (response.status === 404) {
+                                            throw 'Not Found'
+                                        }
+                                        else {
+                                            throw 'Server Error'
+                                        }
+                                    }
+                                )
+                                .catch(
+                                    (error) => {
+                                        console.log(error)
+                                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                                    }
+                                )
+                        }
+
                     }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
-        }
-        else {
-            fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
-                },
-                body: JSON.stringify({"loc_id":this.state.location_id})
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            this.setState(prevState => ({
-                                user_favourited: [...prevState.user_favourited
-                                    , this.state.user_id]
-                              }))
-                        }
-                        else if (response.status === 400) {
-                            throw 'Bad Request'
-                        }
-                        else if (response.status === 401) {
-                            throw 'Unathorised'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
-                        }
-                        else {
-                            throw 'Server Error'
-                        }
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
-        }
+
+                }
+            )
+            .catch(
+                (error) => {
+                    console.log(error)
+                    ToastAndroid.show(error, ToastAndroid.SHORT)
+                }
+            )
 
     }
 
@@ -246,7 +287,7 @@ class Location extends Component {
                                     })}>
                                         <View>
                                             <Text>{item.review_id}</Text>
-                                            <Text>"{item.review_body}"</Text>
+                                            <Text>{item.review_body}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>

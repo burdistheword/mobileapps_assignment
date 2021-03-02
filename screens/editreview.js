@@ -3,6 +3,7 @@ import { View, Text, Button,FlatList,ToastAndroid } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import { TextInput } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Filter from 'bad-words';
 
 class EditReview extends Component {
 
@@ -53,6 +54,15 @@ class EditReview extends Component {
     }
 
     addReview = async () => {
+      console.log(this.state.review_body)
+
+      var filter = new Filter();
+      filter.addWords('Tea','Pastries','Cake','Teas','Pastry','Cakes');
+      const filteredString = filter.clean(this.state.review_body);
+      this.setState({review_body : filteredString})
+      console.log(this.state.review_body)
+
+
         fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.location_id + '/review/' + this.review_id, {
       method: 'PATCH',
       headers: {

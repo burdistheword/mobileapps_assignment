@@ -124,8 +124,15 @@ class Find extends Component {
                                 <View>
                                     <TouchableOpacity onPress={() => this.props.navigation.navigate("Location", { location_id: item.location_id })}>
                                         <View style={styles.item}>
+                                            <Text>{item.location_id}</Text>
                                             <Text>{item.location_name}</Text>
-                                            <Text>{item.avg_overall_rating}</Text>
+                                            <AirbnbRating
+                                                size={15}
+                                                defaultRating={item.avg_overall_rating}
+                                                showRating={false}
+                                                isDisabled={true}
+                                            />
+                                            <Text>{item.location_town}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>

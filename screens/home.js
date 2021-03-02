@@ -12,8 +12,6 @@ class HomeScreen extends Component{
         <Tab.Navigator>
           <Tab.Screen name="Feed" component={FeedScreen}/>
           <Tab.Screen name="Find" component={FindScreen}/>
-          <Tab.Screen name="Feed3" component={FeedScreen}/>
-          <Tab.Screen name="Feed4" component={FeedScreen}/>
         </Tab.Navigator>
     );
   }
