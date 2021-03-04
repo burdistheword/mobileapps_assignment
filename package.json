@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.13.4",
+    "@react-native-picker/picker": "^1.9.11",
     "@react-navigation/bottom-tabs": "^5.11.7",
     "@react-navigation/drawer": "^5.12.3",
     "@react-navigation/native": "^5.9.2",
@@ -19,6 +20,7 @@
     "profanity-filter": "^0.2.1",
     "react": "16.13.1",
     "react-native": "0.63.4",
+    "react-native-camera": "^3.43.0",
     "react-native-elements": "^3.2.0",
     "react-native-gesture-handler": "^1.9.0",
     "react-native-paper": "^4.7.1",

@@ -295,7 +295,7 @@ class Location extends Component {
                         }}
                         keyExtractor={item => item.review_id.toString()}
                     />
-                    <Button title="Add a Review" onPress={() => this.props.navigation.navigate("AddReview", { location_id: this.state.location_id })} />
+                    <Button title="Add a Review" onPress={() => this.props.navigation.navigate("AddReview", { location_id: this.state.location_id})} />
                     <Button title="Favourite Location" onPress={this.favourite} />
                 </View>
             )
