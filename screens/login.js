@@ -82,8 +82,8 @@ class Login extends Component {
               .then(
                 async (rjson) => {
                   const jsonFirstName = rjson.first_name
-                  const jsonLastName = JSON.stringify(rjson.last_name)
-                  const jsonEmail = JSON.stringify(rjson.email)
+                  const jsonLastName = rjson.last_name
+                  const jsonEmail = rjson.email
                   const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
                   const jsonReview = JSON.stringify(rjson.reviews)
                   const jsonLikedRev = JSON.stringify(rjson.liked_reviews)

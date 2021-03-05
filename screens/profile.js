@@ -23,9 +23,9 @@ class Profile extends Component {
       }
       else {
         this.setState({ isLoading: true })
-        const first_name = JSON.parse(await AsyncStorage.getItem('@first_name'))
-        const last_name = JSON.parse(await AsyncStorage.getItem('@last_name'))
-        const email = JSON.parse(await AsyncStorage.getItem('@email'))
+        const first_name = await AsyncStorage.getItem('@first_name')
+        const last_name = await AsyncStorage.getItem('@last_name')
+        const email = await AsyncStorage.getItem('@email')
         this.setState({ first_name: first_name })
         this.setState({ last_name: last_name })
         this.setState({ email: email })
