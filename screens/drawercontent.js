@@ -1,40 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Text, View, Button,StyleSheet,ToastAndroid } from 'react-native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { DrawerRouter, NavigationContainer } from '@react-navigation/native';
-import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import {Drawer} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export function DrawerContent(props) {
 
-    //  constructor(props){
-    //    super(props);
-
-    //    this.state={
-    //     user_id: '',
-    //     first_name: '',
-    //     last_name: '',
-    //     email: '',
-    //     favourite_locations: [],
-    //     reviews: [],
-    //     liked_reviews: []
-
-    //   } 
-
-    // }
-
     logout= async ()=>{
 
-        // fetch('http://10.0.2.2:3333/api/1.0.0/reset', {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json'
-        //     },
-        //   })
-        //ToastAndroid.show(await AsyncStorage.getItem("@session_token"),ToastAndroid.SHORT)
-    
         fetch('http://10.0.2.2:3333/api/1.0.0/user/logout', {
             method: 'POST',
             headers: {

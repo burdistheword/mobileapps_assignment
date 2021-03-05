@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, TextInput, Button, ToastAndroid } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, TextInput, Button, ToastAndroid,ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -118,6 +118,10 @@ class Find extends Component {
                     var remainder = ((rjson.length) % (5));
                     this.setState({ remainder: remainder })
                     this.setState({ searched: false })
+                    if(rjson.length==0){
+                        this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
+                        ToastAndroid.show('No results found', ToastAndroid.SHORT)
+                    }
                 }
             )
             .catch(
@@ -167,6 +171,7 @@ class Find extends Component {
         this.getData(url += 'limit=' + 5 + '&');
         this.flatListRef.scrollToIndex({ index: 0 });
         console.log(this.state.totalLocations.length)
+        
     }
 
     pagination = (input) => {
@@ -177,7 +182,10 @@ class Find extends Component {
             console.log('offset', this.state.offset)
             console.log(calc)
             if (this.state.offset >= (this.state.totalLocations.length - this.state.remainder)) {
-                console.log('did it work?')
+                ToastAndroid.show('No more results', ToastAndroid.SHORT)
+            }
+            else if ((this.state.totalLocations.length) - (this.state.offset) === input){
+                ToastAndroid.show('No more results', ToastAndroid.SHORT)
             }
             else {
                 this.setState({ offset: this.state.offset + 5 }, () => {
@@ -224,7 +232,7 @@ class Find extends Component {
         else {
 
             if (this.state.offset == 0) {
-                ToastAndroid
+                ToastAndroid.show('No previous results', ToastAndroid.SHORT)
             }
             else {
                 this.setState({ offset: this.state.offset - 5 }, () => {
@@ -281,9 +289,7 @@ class Find extends Component {
         if (this.state.isLoading || this.state.isLoading2) {
             return (
                 <View>
-                    <Text>
-                        Loading
-            </Text>
+                    <ActivityIndicator size="large"/>
                 </View>
             )
         }
@@ -292,10 +298,11 @@ class Find extends Component {
                 <SafeAreaView style={styles.container}>
                     <TouchableOpacity onPress={() => { this.props.navigation.toggleDrawer() }}>
                         <Image
-                            style={{ width: 50, height: 50 }}
+                            style={{ width: 25, height: 25 }}
                             source={require('./photos/Hamburger_icon.svg.png')}
                         />
                     </TouchableOpacity>
+                    <Text>Search</Text>
                     <TextInput value={this.state.q} onChangeText={(q) => this.setState({ q: q })} />
                     <Text>Overall Rating</Text>
                     <AirbnbRating
@@ -304,18 +311,21 @@ class Find extends Component {
                         showRating={false}
                         onFinishRating={(rating) => this.ratingCompleted(rating, 'overall_rating')}
                     />
+                    <Text>Price Rating</Text>
                     <AirbnbRating
                         size={15}
                         defaultRating={this.state.price_rating}
                         showRating={false}
                         onFinishRating={(rating) => this.ratingCompleted(rating, 'price_rating')}
                     />
+                    <Text>Quality Rating</Text>
                     <AirbnbRating
                         size={15}
                         defaultRating={this.state.quality_rating}
                         showRating={false}
                         onFinishRating={(rating) => this.ratingCompleted(rating, 'quality_rating')}
                     />
+                    <Text>Clenliness Rating</Text>
                     <AirbnbRating
                         size={15}
                         defaultRating={this.state.clenliness_rating}

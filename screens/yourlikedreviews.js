@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ToastAndroid } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ToastAndroid,ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class YourLikedReviews extends Component {
@@ -68,9 +68,7 @@ class YourLikedReviews extends Component {
         if (this.state.isLoading) {
             return (
                 <View>
-                    <Text>
-                        Loading
-            </Text>
+                    <ActivityIndicator size="large"/>
                 </View>
             )
         }

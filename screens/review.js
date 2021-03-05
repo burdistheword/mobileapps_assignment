@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Button, FlatList, ToastAndroid, Image ,StyleSheet } from 'react-native';
+import { View, Text, Button, FlatList, ToastAndroid, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import { TextInput } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,7 +24,7 @@ class Review extends Component {
             totalLikes: 0,
             liked_reviews: [],
             user_liked: [],
-            url:[]
+            url: []
         }
     }
 
@@ -42,41 +42,41 @@ class Review extends Component {
         }
     }
 
-    getimage = async () =>{
+    getimage = async () => {
         fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.location_id + '/review/' + this.review_id + '/photo', {
-              method: 'GET',
-              headers: {
+            method: 'GET',
+            headers: {
                 'Content-Type': 'image/png',
                 "X-Authorization": await AsyncStorage.getItem('@session_token')
-              },
-            })
-              .then(
+            },
+        })
+            .then(
                 (response) => {
-                  if (response.status === 200) {
-                      this.setState({url:respons})
-                    ToastAndroid.show('Changes Saved!', ToastAndroid.SHORT)
-                    this.props.navigation.navigate('Location')
-                  }
-                  else if (response.status === 400) {
-                    throw 'Bad Request'
-                  }
-                  else if (response.status === 401) {
-                    throw 'Unauthorised'
-                  }
-                  else if (response.status === 404) {
-                    throw 'Not Found'
-                  }
-                  else {
-                    throw 'Server Error'
-                  }
+                    if (response.status === 200) {
+                        this.setState({ url: respons })
+                        ToastAndroid.show('Changes Saved!', ToastAndroid.SHORT)
+                        this.props.navigation.navigate('Location')
+                    }
+                    else if (response.status === 400) {
+                        throw 'Bad Request'
+                    }
+                    else if (response.status === 401) {
+                        throw 'Unauthorised'
+                    }
+                    else if (response.status === 404) {
+                        throw 'Not Found'
+                    }
+                    else {
+                        throw 'Server Error'
+                    }
                 }
-              )
-              .catch(
+            )
+            .catch(
                 (error) => {
-                  console.log(error)
-                  ToastAndroid.show(error, ToastAndroid.SHORT)
+                    console.log(error)
+                    ToastAndroid.show(error, ToastAndroid.SHORT)
                 }
-              )
+            )
     }
 
     deleteReview = async () => {
@@ -290,7 +290,7 @@ class Review extends Component {
         if (this.state.isLoading) {
             return (
                 <View>
-                    <Text>Loading!</Text>
+                    <ActivityIndicator size="large"/>
                 </View>
             )
         }
@@ -332,8 +332,7 @@ class Review extends Component {
                         })} />
                         <Button title="Delete Review" onPress={() => this.deleteReview()} />
                         <Button title="Like Review" onPress={this.likeReview} />
-                        <Image style={{width: 200, height:200}} source={{uri: 'http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/photo?timestamp=' + Date.now()}}/>
-                        <Text>Test</Text>
+                        <Image style={{ width: 200, height: 200 }} source={{ uri: 'http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/photo?timestamp=' + Date.now() }} />
                     </View>
                 )
             }
@@ -368,7 +367,7 @@ class Review extends Component {
                             isDisabled={true}
                         />
                         <Text>{this.state.review_body}</Text>
-                        <Image style={styles.image} source={{uri: 'http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/photo?timestamp=' + Date.now()}}/>
+                        <Image style={styles.image} source={{ uri: 'http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/photo?timestamp=' + Date.now() }} />
                         <Button title="Like Review" onPress={this.likeReview} />
                     </View>
                 )
@@ -379,32 +378,32 @@ class Review extends Component {
 }
 
 const styles = StyleSheet.create({
-    container:{
-      flex: 1,
-      flexDirection: "column",
+    container: {
+        flex: 1,
+        flexDirection: "column",
     },
-    titleText:{
-        color:'pink',
-        alignSelf:'center'
+    titleText: {
+        color: 'pink',
+        alignSelf: 'center'
     },
-    inputText:{
-      height: 50,
-      width:200,
-      alignSelf: 'center'
+    inputText: {
+        height: 50,
+        width: 200,
+        alignSelf: 'center'
     },
     image: {
-      flex: 1,
-      resizeMode: "cover",
-      justifyContent: "center"
-     
+        flex: 1,
+        resizeMode: "cover",
+        justifyContent: "center"
+
     },
-    loginButton:{
-      width:200,
-      alignSelf:'center'
+    loginButton: {
+        width: 200,
+        alignSelf: 'center'
     },
-    createButton:{
-      width:200,
-      alignSelf:'center'
+    createButton: {
+        width: 200,
+        alignSelf: 'center'
     }
 });
 

@@ -1,7 +1,35 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, Button } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, Button, ActivityIndicator, Alert, PermissionsAndroid } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Geolocation from 'react-native-geolocation-service';
+import MapView from 'react-native-maps';
+
+async function requestLocationPermission(){
+  console.log('int')
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'Lab04 Location Permission',
+        message:
+          'This app requires access to your location.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log('You can access location');
+      return true;
+    } else {
+      console.log('Location permission denied');
+      return false;
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
 
 class NearbyScreen extends Component {
 
@@ -14,17 +42,22 @@ class NearbyScreen extends Component {
       first_name: '',
       locations: [],
       isLoading: true,
-      location:null
+      location:null,
+      locationPersmission: false
     }
 
   }
 
   findCoordinates = () => {
+    if(!this.state.locationPermission){
+      this.state.locationPermission = requestLocationPermission();
+    }
     Geolocation.getCurrentPosition(
       (position) => {
         const location = JSON.stringify(position);
 
         this.setState({ location });
+        console.log(this.state.location)
       },
       (error) => {
         Alert.alert(error.message)
@@ -35,12 +68,14 @@ class NearbyScreen extends Component {
         maximumAge: 1000
       }
     );
-  };
+  }
 
 
   async componentDidMount() {
-    const test = JSON.parse(await AsyncStorage.getItem('@first_name'))
+    this.focus = this.props.navigation.addListener('focus', async () => {
+    const test = await AsyncStorage.getItem('@first_name')
     this.setState({ first_name: test })
+    this.findCoordinates();
     fetch('http://10.0.2.2:3333/api/1.0.0/find', {
       method: 'GET',
       headers: {
@@ -77,58 +112,33 @@ class NearbyScreen extends Component {
           ToastAndroid.show(error, ToastAndroid.SHORT)
         }
       )
-
+    });
+  }
+  componentWillUnmount(){
+    this.focus();
   }
 
   render() {
     if (this.state.isLoading) {
       return (
         <View>
-          <Text>
-            Loading
-            </Text>
+          <ActivityIndicator size="large"/>
         </View>
       )
     }
     else {
-      console.log(this.state.locations, 'here')
       return (
-        <SafeAreaView style={styles.container}>
-          <TouchableOpacity onPress={() => { this.props.navigation.toggleDrawer() }}>
-            <Image
-              style={{ width: 50, height: 50 }}
-              source={require('./photos/Hamburger_icon.svg.png')}
-            />
-          </TouchableOpacity>
-          <Text>
-            {this.state.first_name}
-          </Text>
-          <Text>{this.state.location}</Text>
-          <Button title="Get Location" onPress={() => this.findCoordinates()} />
-          <FlatList
-            data={this.state.locations}
-            renderItem={({ item }) => {
-              return (
-                <View>
-                  <TouchableOpacity onPress={() => this.props.navigation.navigate("Location", { location_id: item.location_id })}>
-                    <View style={styles.item}>
-                      <Text>{item.location_id}</Text>
-                      <Text>{item.location_name}</Text>
-                      <AirbnbRating
-                        size={15}
-                        defaultRating={item.avg_overall_rating}
-                        showRating={false}
-                        isDisabled={true}
-                      />
-                      <Text>{item.location_town}</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              )
-            }}
-            keyExtractor={item => item.location_id.toString()}
-          />
-        </SafeAreaView>
+        
+          <MapView
+    initialRegion={{
+      latitude: 37.78825,
+      longitude: -122.4324,
+      latitudeDelta: 0.0922,
+      longitudeDelta: 0.0421,
+    }}
+    style={styles.map}
+  />
+
       );
     }
   }
@@ -147,6 +157,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
 });
 

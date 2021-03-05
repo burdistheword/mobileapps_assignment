@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -70,9 +70,7 @@ class YourFavLocations extends Component {
         if (this.state.isLoading) {
             return (
                 <View>
-                    <Text>
-                        Loading
-            </Text>
+                    <ActivityIndicator size="large"/>
                 </View>
             )
         }

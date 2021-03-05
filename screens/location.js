@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, ToastAndroid, Button, FlatList } from 'react-native';
+import { View, Text, ToastAndroid, Button, FlatList,ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -144,7 +144,6 @@ class Location extends Component {
             )
             .then(
                 async (rjson) => {
-                    //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
                     this.setState({ favourite_locations: rjson.favourite_locations })
                     console.log('justbeforelikescript')
                     var i;
@@ -242,7 +241,7 @@ class Location extends Component {
 
     render() {
         if (this.state.isLoading) {
-            return (<Text>Loading</Text>)
+            return (<ActivityIndicator size="large"/>)
         }
         else {
             return (

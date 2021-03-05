@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Button, FlatList, ToastAndroid, Image } from 'react-native';
+import { View, Text, Button, FlatList, ToastAndroid, Image,ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import { TextInput } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -202,7 +202,7 @@ class EditReview extends Component {
   render() {
     if (this.state.isLoading) {
       return (
-        <Text>Loading!</Text>
+        <ActivityIndicator size="large"/>
       )
     }
     else {

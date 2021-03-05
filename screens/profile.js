@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, Button,TextInput } from 'react-native';
+import { Text, View, Button,TextInput,ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Profile extends Component{
@@ -37,7 +37,7 @@ class Profile extends Component{
   render(){
     if(this.state.isLoading){
       return (<View>
-        <Text>Loading</Text>
+        <ActivityIndicator size="large"/>
       </View>)
     }
     else {
