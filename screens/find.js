@@ -17,29 +17,35 @@ class Find extends Component {
             clenliness_rating: 0,
             search_in: '',
             limit: 0,
-            offset: -5,
+            offset: 0,
+            offsetPrevious: 0,
             locations: [],
-            totalLocations: 0,
+            totalLocations: [],
             isLoading: true,
+            isLoading2: true,
             selectedLanguage: '',
-            setSelectedLanguage: ''
+            setSelectedLanguage: '',
+            url_total: '',
+            searched: false,
+            remainder: 0,
         }
 
     }
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-        this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
-        //this.setState({ totalLocations: this.state.locations.length})
+            this.getTotalLocations('http://10.0.2.2:3333/api/1.0.0/find?')
+            this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
         });
 
     }
 
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.focus();
     }
 
     getData = async (url) => {
+        this.setState({ isLoading: true })
         fetch(url, {
             method: 'GET',
             headers: {
@@ -65,8 +71,11 @@ class Find extends Component {
             .then(
                 async (rjson) => {
                     this.setState({ locations: rjson })
+                    console.log(this.state.locations)
                     this.setState({ isLoading: false })
-
+                    if (this.state.searched) {
+                        this.getTotalLocations(this.state.url_total);
+                    }
                 }
             )
             .catch(
@@ -78,57 +87,185 @@ class Find extends Component {
 
     }
 
-    search = () => {
-        if (this.state.locations.length == 0) {
-            ToastAndroid.show('No results found', ToastAndroid.SHORT)
-            this.getData('http://10.0.2.2:3333/api/1.0.0/find')
-            this.setState({offset:0})
-        }
-        else {
-            this.flatListRef.scrollToIndex({ index: 0 });
-            let url = 'http://10.0.2.2:3333/api/1.0.0/find?'
-
-            console.log(this.state.q);
-            console.log(this.state.overall_rating);
-
-            if (this.state.q != '') {
-                url += 'q=' + this.state.q + '&';
-            }
-
-            if (this.state.overall_rating > 0) {
-                url += 'overall_rating=' + this.state.overall_rating + '&';
-            }
-
-            if (this.state.price_rating > 0) {
-                url += 'price_rating=' + this.state.price_rating + '&';
-            }
-
-            if (this.state.quality_rating > 0) {
-                url += 'quality_rating=' + this.state.quality_rating + '&';
-            }
-
-            if (this.state.clenliness_rating > 0) {
-                url += 'clenliness_rating=' + this.state.clenliness_rating + '&';
-            }
-
-            if (this.state.selectedLanguage == 'favourite') {
-                url += 'search_in=' + this.state.selectedLanguage + '&';
-            }
-
-            if (this.state.selectedLanguage == 'reviewed') {
-                url += 'search_in=' + this.state.selectedLanguage + '&';
-            }
-
-            url += 'limit=' + 5 + '&';
-            url += 'offset=' + this.state.offset + '&';
-
-            this.setState({ offset: this.state.offset + 5 })
-            this.getData(url);
-        }
+    getTotalLocations = async (url) => {
+        this.setState({ isLoading2: true })
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                "X-Authorization": await AsyncStorage.getItem('@session_token')
+            },
+        })
+            .then(
+                (response) => {
+                    if (response.status === 200) {
+                        return response.json();
+                    }
+                    else if (response.status === 400) {
+                        throw 'Bad Request'
+                    }
+                    else if (response.status === 401) {
+                        throw 'Unauthorised'
+                    }
+                    else {
+                        throw 'Server Error'
+                    }
+                }
+            )
+            .then(
+                async (rjson) => {
+                    this.setState({ totalLocations: rjson })
+                    this.setState({ isLoading2: false })
+                    var remainder = ((rjson.length) % (5));
+                    this.setState({ remainder: remainder })
+                    this.setState({ searched: false })
+                }
+            )
+            .catch(
+                (error) => {
+                    console.log(error)
+                    ToastAndroid.show(error, ToastAndroid.SHORT)
+                }
+            )
     }
 
-    pagination = () => {
-        
+    search = () => {
+
+        this.setState({ searched: true })
+
+        let url = 'http://10.0.2.2:3333/api/1.0.0/find?'
+
+        if (this.state.q != '') {
+            url += 'q=' + this.state.q + '&';
+        }
+
+        if (this.state.overall_rating > 0) {
+            url += 'overall_rating=' + this.state.overall_rating + '&';
+        }
+
+        if (this.state.price_rating > 0) {
+            url += 'price_rating=' + this.state.price_rating + '&';
+        }
+
+        if (this.state.quality_rating > 0) {
+            url += 'quality_rating=' + this.state.quality_rating + '&';
+        }
+
+        if (this.state.clenliness_rating > 0) {
+            url += 'clenliness_rating=' + this.state.clenliness_rating + '&';
+        }
+
+        if (this.state.selectedLanguage == 'favourite') {
+            url += 'search_in=' + this.state.selectedLanguage + '&';
+        }
+
+        if (this.state.selectedLanguage == 'reviewed') {
+            url += 'search_in=' + this.state.selectedLanguage + '&';
+        }
+
+        this.setState({ offset: 0 })
+        this.setState({ url_total: url })
+        this.getData(url += 'limit=' + 5 + '&');
+        this.flatListRef.scrollToIndex({ index: 0 });
+        console.log(this.state.totalLocations.length)
+    }
+
+    pagination = (input) => {
+
+        if (input == +5) {
+            var calc = this.state.offset - this.state.remainder
+            console.log('length ', this.state.totalLocations.length)
+            console.log('offset', this.state.offset)
+            console.log(calc)
+            if (this.state.offset >= (this.state.totalLocations.length - this.state.remainder)) {
+                console.log('did it work?')
+            }
+            else {
+                this.setState({ offset: this.state.offset + 5 }, () => {
+                    let url = 'http://10.0.2.2:3333/api/1.0.0/find?'
+                    if (this.state.q != '') {
+                        url += 'q=' + this.state.q + '&';
+                    }
+
+                    if (this.state.overall_rating > 0) {
+                        url += 'overall_rating=' + this.state.overall_rating + '&';
+                    }
+
+                    if (this.state.price_rating > 0) {
+                        url += 'price_rating=' + this.state.price_rating + '&';
+                    }
+
+                    if (this.state.quality_rating > 0) {
+                        url += 'quality_rating=' + this.state.quality_rating + '&';
+                    }
+
+                    if (this.state.clenliness_rating > 0) {
+                        url += 'clenliness_rating=' + this.state.clenliness_rating + '&';
+                    }
+
+                    if (this.state.selectedLanguage == 'favourite') {
+                        url += 'search_in=' + this.state.selectedLanguage + '&';
+                    }
+
+                    if (this.state.selectedLanguage == 'reviewed') {
+                        url += 'search_in=' + this.state.selectedLanguage + '&';
+                    }
+
+                    url += 'limit=' + 5 + '&';
+                    url += 'offset=' + this.state.offset + '&';
+                    this.getData(url);
+                    this.flatListRef.scrollToIndex({ index: 0 })
+
+
+                });
+            }
+
+
+        }
+        else {
+
+            if (this.state.offset == 0) {
+                ToastAndroid
+            }
+            else {
+                this.setState({ offset: this.state.offset - 5 }, () => {
+                    let url = 'http://10.0.2.2:3333/api/1.0.0/find?'
+                    if (this.state.q != '') {
+                        url += 'q=' + this.state.q + '&';
+                    }
+
+                    if (this.state.overall_rating > 0) {
+                        url += 'overall_rating=' + this.state.overall_rating + '&';
+                    }
+
+                    if (this.state.price_rating > 0) {
+                        url += 'price_rating=' + this.state.price_rating + '&';
+                    }
+
+                    if (this.state.quality_rating > 0) {
+                        url += 'quality_rating=' + this.state.quality_rating + '&';
+                    }
+
+                    if (this.state.clenliness_rating > 0) {
+                        url += 'clenliness_rating=' + this.state.clenliness_rating + '&';
+                    }
+
+                    if (this.state.selectedLanguage == 'favourite') {
+                        url += 'search_in=' + this.state.selectedLanguage + '&';
+                    }
+
+                    if (this.state.selectedLanguage == 'reviewed') {
+                        url += 'search_in=' + this.state.selectedLanguage + '&';
+                    }
+
+                    url += 'limit=' + 5 + '&';
+                    url += 'offset=' + this.state.offset + '&';
+                    this.getData(url);
+                    this.flatListRef.scrollToIndex({ index: 0 });
+                });
+            }
+
+        }
+
     }
 
     ratingCompleted(rating, name) {
@@ -141,7 +278,7 @@ class Find extends Component {
     }
 
     render() {
-        if (this.state.isLoading) {
+        if (this.state.isLoading || this.state.isLoading2) {
             return (
                 <View>
                     <Text>
@@ -195,11 +332,8 @@ class Find extends Component {
                         <Picker.Item label="Reviewed" value="reviewed" />
                     </Picker>
                     <Button title="Search" onPress={() => this.search()} />
-                    <Text>{this.state.offset}</Text>
                     <FlatList
                         data={this.state.locations}
-                        onEndReachedThreshold={0.5}
-                        onEndReached={this.search}
                         ref={(ref) => { this.flatListRef = ref; }}
                         renderItem={({ item }) => {
                             return (
@@ -240,6 +374,8 @@ class Find extends Component {
                         }}
                         keyExtractor={item => item.location_id.toString()}
                     />
+                    <Button title="Next page" onPress={() => this.pagination(+5)} />
+                    <Button title="Previous page" onPress={() => this.pagination(-5)} />
                 </SafeAreaView>
             );
         }
