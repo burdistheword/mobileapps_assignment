@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, Button,FlatList,ToastAndroid,ActivityIndicator } from 'react-native';
+import { View, Text, Button, FlatList, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import { TextInput } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,54 +7,58 @@ import Filter from 'bad-words';
 
 class AddReview extends Component {
 
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            overall_rating: 0,
-            price_rating: 0,
-            quality_rating: 0,
-            clenliness_rating: 0,
-            review_body: ""
-        }
+    this.state = {
+      overall_rating: 0,
+      price_rating: 0,
+      quality_rating: 0,
+      clenliness_rating: 0,
+      review_body: ""
     }
+  }
 
-    componentDidMount(){
-      this.focus = this.props.navigation.addListener('focus', async () => {
-        this.setState({overall_rating:0})
-        this.setState({price_rating:0})
-        this.setState({quality_rating:0})
-        this.setState({clenliness_rating:0})
-        this.setState({review_body:""})
+  componentDidMount() {
+    this.focus = this.props.navigation.addListener('focus', async () => {
+      const value = await AsyncStorage.getItem('@session_token')
+      if (value == null) {
+        this.props.navigation.navigate('Login')
+      }
+      else {
+        this.setState({ overall_rating: 0 })
+        this.setState({ price_rating: 0 })
+        this.setState({ quality_rating: 0 })
+        this.setState({ clenliness_rating: 0 })
+        this.setState({ review_body: "" })
         const location_id = this.props.route.params.location_id;
         console.log(location_id);
         this.location_id = location_id;
-      });
-    }
+      }
+    });
+  }
 
-    componentWillUnmount(){
-      this.focus();
-    }
+  componentWillUnmount() {
+    this.focus();
+  }
 
-    ratingCompleted(rating, name) {
-        let stateObject = () => {
-            let returnObj = {};
-            returnObj[name] = rating;
-            return returnObj;
-        };
-        this.setState(stateObject);
-    }
+  ratingCompleted(rating, name) {
+    let stateObject = () => {
+      let returnObj = {};
+      returnObj[name] = rating;
+      return returnObj;
+    };
+    this.setState(stateObject);
+  }
 
-    addReview = async () => {
-      console.log(this.state.review_body)
+  addReview = async () => {
 
-      var filter = new Filter();
-      filter.addWords('Tea','Pastries','Cake','Teas','Pastry','Cakes');
-      const filteredString = filter.clean(this.state.review_body);
-      this.setState({review_body : filteredString})
-      console.log(this.state.review_body)
-  
-        fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.location_id + '/review', {
+    var filter = new Filter();
+    filter.addWords('Tea', 'Pastries', 'Cake', 'Teas', 'Pastry', 'Cakes');
+    const filteredString = filter.clean(this.state.review_body);
+    this.setState({ review_body: filteredString })
+
+    fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.location_id + '/review', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +69,7 @@ class AddReview extends Component {
       .then(
         (response) => {
           if (response.status === 201) {
-            ToastAndroid.show('Review Added!',ToastAndroid.SHORT)
+            ToastAndroid.show('Review Added!', ToastAndroid.SHORT)
             this.props.navigation.navigate('Location');
           }
           else if (response.status === 400) {
@@ -88,44 +92,44 @@ class AddReview extends Component {
           ToastAndroid.show(error, ToastAndroid.SHORT)
         }
       )
-    }
+  }
 
-    render() {
-        return (
-            <View>
-                <Text>Location ID - {this.location_id}</Text>
-                <AirbnbRating
-                    size={15}
-                    defaultRating={this.state.overall_rating}
-                    showRating={false}
-                    onFinishRating={(rating) => this.ratingCompleted(rating, 'overall_rating')}
-                />
-                <AirbnbRating
-                    size={15}
-                    defaultRating={this.state.price_rating}
-                    showRating={false}
-                    onFinishRating={(rating) => this.ratingCompleted(rating, 'price_rating')}
-                />
-                <AirbnbRating
-                    size={15}
-                    defaultRating={this.state.quality_rating}
-                    showRating={false}
-                    onFinishRating={(rating) => this.ratingCompleted(rating, 'quality_rating')}
-                />
-                <AirbnbRating
-                    size={15}
-                    defaultRating={this.state.clenliness_rating}
-                    showRating={false}
-                    onFinishRating={(rating) => this.ratingCompleted(rating, 'clenliness_rating')}
-                />
-                <TextInput
-                    value={this.state.review_body}
-                    placeholder="Enter review comments"
-                    onChangeText={(review_body) => this.setState({ review_body: review_body })}
-                />
-                <Button title="Save Changes" onPress={() => this.addReview()} />
-            </View>
-        )
+  render() {
+    return (
+      <View>
+        <Text>Location ID - {this.location_id}</Text>
+        <AirbnbRating
+          size={15}
+          defaultRating={this.state.overall_rating}
+          showRating={false}
+          onFinishRating={(rating) => this.ratingCompleted(rating, 'overall_rating')}
+        />
+        <AirbnbRating
+          size={15}
+          defaultRating={this.state.price_rating}
+          showRating={false}
+          onFinishRating={(rating) => this.ratingCompleted(rating, 'price_rating')}
+        />
+        <AirbnbRating
+          size={15}
+          defaultRating={this.state.quality_rating}
+          showRating={false}
+          onFinishRating={(rating) => this.ratingCompleted(rating, 'quality_rating')}
+        />
+        <AirbnbRating
+          size={15}
+          defaultRating={this.state.clenliness_rating}
+          showRating={false}
+          onFinishRating={(rating) => this.ratingCompleted(rating, 'clenliness_rating')}
+        />
+        <TextInput
+          value={this.state.review_body}
+          placeholder="Enter review comments"
+          onChangeText={(review_body) => this.setState({ review_body: review_body })}
+        />
+        <Button title="Save Changes" onPress={() => this.addReview()} />
+      </View>
+    )
   }
 }
 export default AddReview;

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import FeedScreen from './feed';
 import FindScreen from './find';
-import NearbyScreen from './nearby'; 
+import NearbyScreen from './nearby';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Tab = createBottomTabNavigator();

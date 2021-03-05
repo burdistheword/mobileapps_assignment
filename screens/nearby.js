@@ -5,8 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from 'react-native-geolocation-service';
 import MapView from 'react-native-maps';
 
-async function requestLocationPermission(){
-  console.log('int')
+async function requestLocationPermission() {
   try {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -42,14 +41,15 @@ class NearbyScreen extends Component {
       first_name: '',
       locations: [],
       isLoading: true,
-      location:null,
+      location: null,
       locationPersmission: false
     }
 
   }
 
   findCoordinates = () => {
-    if(!this.state.locationPermission){
+
+    if (!this.state.locationPermission) {
       this.state.locationPermission = requestLocationPermission();
     }
     Geolocation.getCurrentPosition(
@@ -73,71 +73,77 @@ class NearbyScreen extends Component {
 
   async componentDidMount() {
     this.focus = this.props.navigation.addListener('focus', async () => {
-    const test = await AsyncStorage.getItem('@first_name')
-    this.setState({ first_name: test })
-    this.findCoordinates();
-    fetch('http://10.0.2.2:3333/api/1.0.0/find', {
-      method: 'GET',
-      headers: {
-        "X-Authorization": await AsyncStorage.getItem('@session_token')
-      },
-    })
-      .then(
-        (response) => {
-          if (response.status === 200) {
-            return response.json();
-          }
-          else if (response.status === 400) {
-            throw 'Bad Request'
-          }
-          else if (response.status === 401) {
-            throw 'Unauthorised'
-          }
-          else {
-            throw 'Server Error'
-          }
-        }
-      )
-      .then(
-        async (rjson) => {
-          //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-          console.log(rjson)
-          this.setState({ locations: rjson })
-          this.setState({ isLoading: false })
-        }
-      )
-      .catch(
-        (error) => {
-          console.log(error)
-          ToastAndroid.show(error, ToastAndroid.SHORT)
-        }
-      )
+      const value = await AsyncStorage.getItem('@session_token')
+      if (value == null) {
+        this.props.navigation.navigate('Login')
+      }
+      else {
+        const test = await AsyncStorage.getItem('@first_name')
+        this.setState({ first_name: test })
+        this.findCoordinates();
+        fetch('http://10.0.2.2:3333/api/1.0.0/find', {
+          method: 'GET',
+          headers: {
+            "X-Authorization": await AsyncStorage.getItem('@session_token')
+          },
+        })
+          .then(
+            (response) => {
+              if (response.status === 200) {
+                return response.json();
+              }
+              else if (response.status === 400) {
+                throw 'Bad Request'
+              }
+              else if (response.status === 401) {
+                throw 'Unauthorised'
+              }
+              else {
+                throw 'Server Error'
+              }
+            }
+          )
+          .then(
+            async (rjson) => {
+              //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+              console.log(rjson)
+              this.setState({ locations: rjson })
+              this.setState({ isLoading: false })
+            }
+          )
+          .catch(
+            (error) => {
+              console.log(error)
+              ToastAndroid.show(error, ToastAndroid.SHORT)
+            }
+          )
+      }
     });
   }
-  componentWillUnmount(){
+  componentWillUnmount() {
     this.focus();
   }
 
   render() {
     if (this.state.isLoading) {
       return (
-        <View>
-          <ActivityIndicator size="large"/>
-        </View>
+        <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                </View>
       )
     }
     else {
       return (
-        
-          <MapView
-    initialRegion={{
-      latitude: 37.78825,
-      longitude: -122.4324,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    }}
-    style={styles.map}
-  />
+
+        <MapView
+          initialRegion={{
+            latitude: 37.78825,
+            longitude: -122.4324,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          style={styles.map}
+        />
 
       );
     }

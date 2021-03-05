@@ -1,96 +1,94 @@
 import React, { Component } from 'react';
-import { View, Text, Button, TextInput, Alert, StyleSheet, ToastAndroid,TouchableOpacity } from 'react-native';
+import { View, Text, Button, TextInput, Alert, StyleSheet, ToastAndroid, TouchableOpacity } from 'react-native';
 
 
-class Signup extends Component{
+class Signup extends Component {
 
-    constructor(props){
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state={
-            email:'',
-            password:'',
-            last_name:'',
-            first_name:''
-
-        }
+    this.state = {
+      email: '',
+      password: '',
+      last_name: '',
+      first_name: ''
 
     }
 
-  Signup=()=>{
-    fetch('http://10.0.2.2:3333/api/1.0.0/user', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(this.state)
-    })
-    .then(
-      (response)=>{
-        if (response.status===201){
-          return response.json()
-        }
-        else if (response.status===400){
-          throw 'failed validation'
-        }
-        else {
-          throw 'something went wrong'
-        }
-      }
-    )
-    .then(
-      (rjson)=>{
-        srjson = JSON.stringify(rjson)
-        console.log(srjson)
-        ToastAndroid.show('Account Created',ToastAndroid.SHORT)
-        this.props.navigation.navigate('Login')
-        
-      }
+  }
 
-    )
-    .catch(
-      (error)=>{
-        console.log(error)
-        ToastAndroid.show(error,ToastAndroid.SHORT)
-      }
-    )
+  Signup = () => {
+    if (this.state.email.includes('@') && this.state.password.length >= 6) {
+      fetch('http://10.0.2.2:3333/api/1.0.0/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(this.state)
+      })
+        .then(
+          (response) => {
+            if (response.status === 201) {
+              ToastAndroid.show('Account Created', ToastAndroid.SHORT)
+              this.props.navigation.navigate('Login')
+            }
+            else if (response.status === 400) {
+              throw 'Bad Request'
+            }
+            else {
+              throw 'Server Error'
+            }
+          }
+        )
+        .catch(
+          (error) => {
+            console.log(error)
+            ToastAndroid.show(error, ToastAndroid.SHORT)
+          }
+        )
+    }
+    else {
+      ToastAndroid.show('Invalid Email/Password', ToastAndroid.SHORT)
 
-  }  
-  render(){
+    }
+
+
+  }
+  render() {
     return (
-      <View style ={styles.container}>
+      <View style={styles.container}>
         <Text style={styles.titleText}>Sign up for account</Text>
         <TextInput
-            style={styles.inputText}
-            placeholder="Enter you First Name"
-            onChangeText={(first_name)=>{this.setState({first_name:first_name})}}
-            defaultValue={this.state.first_name}
-        />
-        
-        <TextInput
-            style={styles.inputText}
-            placeholder="Enter your Last Name"
-            onChangeText={(last_name)=>{this.setState({last_name:last_name})}}
-            defaultValue={this.state.last_name}
-        />
-        
-        <TextInput
-            style={styles.inputText}
-            placeholder="Enter your email!"
-            onChangeText={(email)=>{this.setState({email:email})}}
-            defaultValue={this.state.email}
+          style={styles.inputText}
+          placeholder="Enter you First Name"
+          onChangeText={(first_name) => { this.setState({ first_name: first_name }) }}
+          defaultValue={this.state.first_name}
         />
 
         <TextInput
-            style={styles.inputText}
-            placeholder="Enter your password!"
-            onChangeText={(password)=>{this.setState({password:password})}}
-            defaultValue={this.state.password}
-            secureTextEntry
+          style={styles.inputText}
+          placeholder="Enter your Last Name"
+          onChangeText={(last_name) => { this.setState({ last_name: last_name }) }}
+          defaultValue={this.state.last_name}
+        />
+
+        <TextInput
+          style={styles.inputText}
+          placeholder="Enter your email!"
+          onChangeText={(email) => { this.setState({ email: email }) }}
+          defaultValue={this.state.email}
+        />
+
+        <TextInput
+          style={styles.inputText}
+          placeholder="Enter your password!"
+          onChangeText={(password) => { this.setState({ password: password }) }}
+          defaultValue={this.state.password}
+          secureTextEntry
         />
         <TouchableOpacity style={styles.loginButton} onPress={this.Signup}>
-            <Text style={styles.loginButtonText}>Create account</Text>
-          </TouchableOpacity>
+          <Text style={styles.loginButtonText}>Create account</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -106,17 +104,17 @@ const styles = StyleSheet.create({
   titleText: {
     color: 'pink',
     alignSelf: 'center',
-    fontSize:40
+    fontSize: 40
   },
   inputText: {
     height: 50,
     width: 300,
     alignSelf: 'center',
-    fontSize:20,
+    fontSize: 20,
     backgroundColor: '#7c573d',
-    paddingLeft:10,
+    paddingLeft: 10,
     borderRadius: 5,
-    margin:10
+    margin: 10
   },
   loginButton: {
     width: 300,
@@ -128,7 +126,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     textAlign: 'center',
-    fontSize:20
+    fontSize: 20
 
   },
   createButton: {
@@ -137,11 +135,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     backgroundColor: "rgba(0,0,0,0)",
     borderRadius: 5,
-    marginTop:10
+    marginTop: 10
   },
   creatButtonText: {
     textAlign: 'center',
-    fontSize:15
+    fontSize: 15
 
   }
 });

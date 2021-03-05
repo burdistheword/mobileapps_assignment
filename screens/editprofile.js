@@ -16,14 +16,19 @@ class Profile extends Component {
   }
 
   async componentDidMount() {
-    const first_name = JSON.parse(await AsyncStorage.getItem('@first_name'))
-    const last_name = JSON.parse(await AsyncStorage.getItem('@last_name'))
-    const email = JSON.parse(await AsyncStorage.getItem('@email'))
+    const value = await AsyncStorage.getItem('@session_token')
+    if (value == null) {
+      this.props.navigation.navigate('Login')
+    }
+    else {
+      const first_name = JSON.parse(await AsyncStorage.getItem('@first_name'))
+      const last_name = JSON.parse(await AsyncStorage.getItem('@last_name'))
+      const email = JSON.parse(await AsyncStorage.getItem('@email'))
 
-    this.setState({ first_name: first_name })
-    this.setState({ last_name: last_name })
-    this.setState({ email: email })
-    
+      this.setState({ first_name: first_name })
+      this.setState({ last_name: last_name })
+      this.setState({ email: email })
+    }
   }
 
 
@@ -44,7 +49,7 @@ class Profile extends Component {
         (response) => {
           if (response.status === 200) {
             fetch('http://10.0.2.2:3333/api/1.0.0/user/' + ID, {
-               method: 'GET',
+              method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
                 "X-Authorization": ST
@@ -70,7 +75,6 @@ class Profile extends Component {
               )
               .then(
                 async (rjson) => {
-                  //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
                   const jsonFirstName = JSON.stringify(rjson.first_name)
                   const jsonLastName = JSON.stringify(rjson.last_name)
                   const jsonEmail = JSON.stringify(rjson.email)

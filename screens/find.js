@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, TextInput, Button, ToastAndroid,ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, TextInput, Button, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,8 +34,14 @@ class Find extends Component {
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            this.getTotalLocations('http://10.0.2.2:3333/api/1.0.0/find?')
-            this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                this.getTotalLocations('http://10.0.2.2:3333/api/1.0.0/find?')
+                this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
+            }
         });
 
     }
@@ -71,7 +77,6 @@ class Find extends Component {
             .then(
                 async (rjson) => {
                     this.setState({ locations: rjson })
-                    console.log(this.state.locations)
                     this.setState({ isLoading: false })
                     if (this.state.searched) {
                         this.getTotalLocations(this.state.url_total);
@@ -118,7 +123,7 @@ class Find extends Component {
                     var remainder = ((rjson.length) % (5));
                     this.setState({ remainder: remainder })
                     this.setState({ searched: false })
-                    if(rjson.length==0){
+                    if (rjson.length == 0) {
                         this.getData('http://10.0.2.2:3333/api/1.0.0/find?' + 'limit=' + 5)
                         ToastAndroid.show('No results found', ToastAndroid.SHORT)
                     }
@@ -170,21 +175,16 @@ class Find extends Component {
         this.setState({ url_total: url })
         this.getData(url += 'limit=' + 5 + '&');
         this.flatListRef.scrollToIndex({ index: 0 });
-        console.log(this.state.totalLocations.length)
-        
+
     }
 
     pagination = (input) => {
 
         if (input == +5) {
-            var calc = this.state.offset - this.state.remainder
-            console.log('length ', this.state.totalLocations.length)
-            console.log('offset', this.state.offset)
-            console.log(calc)
             if (this.state.offset >= (this.state.totalLocations.length - this.state.remainder)) {
                 ToastAndroid.show('No more results', ToastAndroid.SHORT)
             }
-            else if ((this.state.totalLocations.length) - (this.state.offset) === input){
+            else if ((this.state.totalLocations.length) - (this.state.offset) === input) {
                 ToastAndroid.show('No more results', ToastAndroid.SHORT)
             }
             else {
@@ -288,8 +288,8 @@ class Find extends Component {
     render() {
         if (this.state.isLoading || this.state.isLoading2) {
             return (
-                <View>
-                    <ActivityIndicator size="large"/>
+                <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
                 </View>
             )
         }

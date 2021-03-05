@@ -20,50 +20,53 @@ class FeedScreen extends Component {
 
   async componentDidMount() {
     this.focus = this.props.navigation.addListener('focus', async () => {
-      const first_name = await AsyncStorage.getItem('@first_name')
-      this.setState({ first_name: first_name }, async () => {
+      const value = await AsyncStorage.getItem('@session_token')
+      if (value == null) {
+        this.props.navigation.navigate('Login')
+      }
+      else {
+        const first_name = await AsyncStorage.getItem('@first_name')
+        this.setState({ first_name: first_name }, async () => {
 
 
-        fetch('http://10.0.2.2:3333/api/1.0.0/find', {
-          method: 'GET',
-          headers: {
-            "X-Authorization": await AsyncStorage.getItem('@session_token')
-          },
-        })
-          .then(
-            (response) => {
-              if (response.status === 200) {
-                return response.json();
+          fetch('http://10.0.2.2:3333/api/1.0.0/find', {
+            method: 'GET',
+            headers: {
+              "X-Authorization": await AsyncStorage.getItem('@session_token')
+            },
+          })
+            .then(
+              (response) => {
+                if (response.status === 200) {
+                  return response.json();
+                }
+                else if (response.status === 400) {
+                  throw 'Bad Request'
+                }
+                else if (response.status === 401) {
+                  throw 'Unauthorised'
+                }
+                else {
+                  throw 'Server Error'
+                }
               }
-              else if (response.status === 400) {
-                throw 'Bad Request'
+            )
+            .then(
+              async (rjson) => {
+                this.setState({ locations: rjson })
+                this.setState({ isLoading: false })
               }
-              else if (response.status === 401) {
-                throw 'Unauthorised'
+            )
+            .catch(
+              (error) => {
+                console.log(error)
+                ToastAndroid.show(error, ToastAndroid.SHORT)
               }
-              else {
-                throw 'Server Error'
-              }
-            }
-          )
-          .then(
-            async (rjson) => {
-              //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-              console.log(rjson)
-              this.setState({ locations: rjson })
-              this.setState({ isLoading: false })
-            }
-          )
-          .catch(
-            (error) => {
-              console.log(error)
-              ToastAndroid.show(error, ToastAndroid.SHORT)
-            }
-          )
+            )
 
 
-      });
-
+        });
+      }
     });
   }
   componentWillUnmount() {
@@ -72,9 +75,9 @@ class FeedScreen extends Component {
   render() {
     if (this.state.isLoading) {
       return (
-        <View>
-          <ActivityIndicator size="large" />
-        </View>
+        <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                </View>
       )
     }
     else {

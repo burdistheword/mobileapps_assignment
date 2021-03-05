@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, ToastAndroid, Button, FlatList,ActivityIndicator } from 'react-native';
+import { View, Text, ToastAndroid, Button, FlatList, ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -25,91 +25,97 @@ class Location extends Component {
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            const us_id = await AsyncStorage.getItem('@user_id')
-            this.setState({ user_id: us_id })
-            this.setState({ isLoading: true })
-            const loc_id = JSON.stringify(this.props.route.params.location_id);
-            this.setState({ location_id: loc_id })
-            fetch("http://10.0.2.2:3333/api/1.0.0/location/" + loc_id, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
-                },
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            return response.json();
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                const us_id = await AsyncStorage.getItem('@user_id')
+                this.setState({ user_id: us_id })
+                this.setState({ isLoading: true })
+                const loc_id = JSON.stringify(this.props.route.params.location_id);
+                this.setState({ location_id: loc_id })
+                fetch("http://10.0.2.2:3333/api/1.0.0/location/" + loc_id, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Authorization": await AsyncStorage.getItem('@session_token')
+                    },
+                })
+                    .then(
+                        (response) => {
+                            if (response.status === 200) {
+                                return response.json();
+                            }
+                            else if (response.status === 404) {
+                                throw 'Not Found'
+                            }
+                            else {
+                                throw 'Server Error'
+                            }
                         }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
+                    )
+                    .then(
+                        async (rjson) => {
+                            this.setState({ location_name: rjson.location_name })
+                            this.setState({ avg_overall_rating: rjson.avg_overall_rating })
+                            this.setState({ avg_price_rating: rjson.avg_price_rating })
+                            this.setState({ avg_quality_rating: rjson.avg_quality_rating })
+                            this.setState({ avg_clenliness_rating: rjson.avg_clenliness_rating })
+                            this.setState({ location_reviews: rjson.location_reviews })
+                            this.setState({ isLoading: false })
                         }
-                        else {
-                            throw 'Server Error'
+                    )
+                    .catch(
+                        (error) => {
+                            console.log(error)
+                            ToastAndroid.show(error, ToastAndroid.SHORT)
                         }
-                    }
-                )
-                .then(
-                    async (rjson) => {
-                        this.setState({ location_name: rjson.location_name })
-                        this.setState({ avg_overall_rating: rjson.avg_overall_rating })
-                        this.setState({ avg_price_rating: rjson.avg_price_rating })
-                        this.setState({ avg_quality_rating: rjson.avg_quality_rating })
-                        this.setState({ avg_clenliness_rating: rjson.avg_clenliness_rating })
-                        this.setState({ location_reviews: rjson.location_reviews })
-                        this.setState({ isLoading: false })
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
+                    )
 
-            fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Authorization": await AsyncStorage.getItem('@session_token')
 
-                },
+                    },
 
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            return response.json();
+                })
+                    .then(
+                        (response) => {
+                            if (response.status === 200) {
+                                return response.json();
+                            }
+                            else if (response.status === 401) {
+                                throw 'Unauthorized User Details'
+                            }
+                            else if (response.status === 404) {
+                                throw 'Not Found'
+                            }
+                            else {
+                                throw 'Server Error'
+                            }
                         }
-                        else if (response.status === 401) {
-                            throw 'Unauthorized User Details'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
-                        }
-                        else {
-                            throw 'Server Error'
-                        }
-                    }
-                )
-                .then(
-                    async (rjson) => {
-                        const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
-                        const jsonReview = JSON.stringify(rjson.reviews)
-                        const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
+                    )
+                    .then(
+                        async (rjson) => {
+                            const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
+                            const jsonReview = JSON.stringify(rjson.reviews)
+                            const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
 
-                        await AsyncStorage.setItem('@favourite_location', jsonFavLoc)
-                        await AsyncStorage.setItem('@reviews', jsonReview)
-                        await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
+                            await AsyncStorage.setItem('@favourite_location', jsonFavLoc)
+                            await AsyncStorage.setItem('@reviews', jsonReview)
+                            await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
+                        }
+                    )
+                    .catch(
+                        (error) => {
+                            console.log(error)
+                            ToastAndroid.show(error, ToastAndroid.SHORT)
+                        }
+                    )
+            }
         });
     }
 
@@ -145,9 +151,45 @@ class Location extends Component {
             .then(
                 async (rjson) => {
                     this.setState({ favourite_locations: rjson.favourite_locations })
-                    console.log('justbeforelikescript')
                     var i;
                     var noMatchCount = 0;
+                    if(this.state.favourite_locations.length == 0){
+                        fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+                                },
+                                body: JSON.stringify({ "loc_id": this.state.location_id })
+                            })
+                                .then(
+                                    (response) => {
+                                        if (response.status === 200) {
+                                            console.log('Faved')
+                                            ToastAndroid.show('Faved', ToastAndroid.SHORT)
+                                        }
+                                        else if (response.status === 400) {
+                                            throw 'Bad Request'
+                                        }
+                                        else if (response.status === 401) {
+                                            throw 'Unathorised'
+                                        }
+                                        else if (response.status === 404) {
+                                            throw 'Not Found'
+                                        }
+                                        else {
+                                            throw 'Server Error'
+                                        }
+                                    }
+                                )
+                                .catch(
+                                    (error) => {
+                                        console.log(error)
+                                        ToastAndroid.show(error, ToastAndroid.SHORT)
+                                    }
+                                )
+                    }
+                    else {
                     for (i = 0; i < this.state.favourite_locations.length; i++) {
                         if (this.state.favourite_locations[i].location_id == this.state.location_id) {
                             fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/favourite', {
@@ -196,7 +238,7 @@ class Location extends Component {
                                     'Content-Type': 'application/json',
                                     "X-Authorization": await AsyncStorage.getItem('@session_token')
                                 },
-                                body: JSON.stringify({ "loc_id": this.state.location_id})
+                                body: JSON.stringify({ "loc_id": this.state.location_id })
                             })
                                 .then(
                                     (response) => {
@@ -229,6 +271,7 @@ class Location extends Component {
                     }
 
                 }
+            }
             )
             .catch(
                 (error) => {
@@ -241,11 +284,16 @@ class Location extends Component {
 
     render() {
         if (this.state.isLoading) {
-            return (<ActivityIndicator size="large"/>)
+            return (
+                <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+            )
         }
         else {
             return (
                 <View>
+                    <Text>{this.state.location_name}</Text>
                     <Text>Overall Rating</Text>
                     <AirbnbRating
                         size={15}
@@ -274,7 +322,7 @@ class Location extends Component {
                         isDisabled={true}
                         showRating={false}
                     />
-                    <Text>{this.state.location_name}</Text>
+                    
                     <FlatList
                         data={this.state.location_reviews}
                         renderItem={({ item }) => {
@@ -282,11 +330,12 @@ class Location extends Component {
                                 <View>
                                     <TouchableOpacity onPress={() => this.props.navigation.navigate("Review", {
                                         location_id: this.state.location_id, review_body: item.review_body, review_id: item.review_id,
-                                        overall_rating: item.overall_rating, price_rating: item.price_rating, quality_rating: item.quality_rating, clenliness_rating: item.clenliness_rating
+                                        overall_rating: item.overall_rating, price_rating: item.price_rating, quality_rating: item.quality_rating, clenliness_rating: item.clenliness_rating, likes:item.likes
                                     })}>
                                         <View>
                                             <Text>{item.review_id}</Text>
                                             <Text>{item.review_body}</Text>
+                                            <Text>Likes {item.likes}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -294,7 +343,7 @@ class Location extends Component {
                         }}
                         keyExtractor={item => item.review_id.toString()}
                     />
-                    <Button title="Add a Review" onPress={() => this.props.navigation.navigate("AddReview", { location_id: this.state.location_id})} />
+                    <Button title="Add a Review" onPress={() => this.props.navigation.navigate("AddReview", { location_id: this.state.location_id })} />
                     <Button title="Favourite Location" onPress={this.favourite} />
                 </View>
             )

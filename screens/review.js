@@ -24,7 +24,8 @@ class Review extends Component {
             totalLikes: 0,
             liked_reviews: [],
             user_liked: [],
-            url: []
+            url: [],
+            likes: 0
         }
     }
 
@@ -149,9 +150,45 @@ class Review extends Component {
                 async (rjson) => {
                     //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
                     this.setState({ liked_reviews: rjson.liked_reviews })
-                    console.log('justbeforelikescript')
                     var i;
                     var noMatchCount = 0;
+                    if(this.state.liked_reviews.length == 0){
+                        fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                "X-Authorization": await AsyncStorage.getItem('@session_token')
+                            },
+                            body: JSON.stringify({ "loc_id": this.state.location_id, "rev_id": this.state.review_id })
+                        })
+                            .then(
+                                (response) => {
+                                    if (response.status === 200) {
+                                        console.log('Liked')
+                                        ToastAndroid.show('Liked', ToastAndroid.SHORT)
+                                    }
+                                    else if (response.status === 400) {
+                                        throw 'Bad Request'
+                                    }
+                                    else if (response.status === 401) {
+                                        throw 'Unathorised'
+                                    }
+                                    else if (response.status === 404) {
+                                        throw 'Not Found'
+                                    }
+                                    else {
+                                        throw 'Server Error'
+                                    }
+                                }
+                            )
+                            .catch(
+                                (error) => {
+                                    console.log(error)
+                                    ToastAndroid.show(error, ToastAndroid.SHORT)
+                                }
+                            ) 
+                    }
+                    else{
                     for (i = 0; i < this.state.liked_reviews.length; i++) {
                         if (this.state.liked_reviews[i].review.review_id == this.state.review_id) {
                             fetch('http://10.0.2.2:3333/api/1.0.0/location/' + this.state.location_id + '/review/' + this.state.review_id + '/like', {
@@ -231,7 +268,7 @@ class Review extends Component {
                         }
 
                     }
-
+                }
                 }
             )
             .catch(
@@ -240,36 +277,42 @@ class Review extends Component {
                     ToastAndroid.show(error, ToastAndroid.SHORT)
                 }
             )
+                
 
     }
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            this.setState({ isLoading: true })
-            this.setState({ yourReview: false })
-            console.log(await AsyncStorage.getItem('@user_id'))
-            const us_id = await AsyncStorage.getItem('@user_id')
-            const loc_id = this.props.route.params.location_id;
-            const rev_body = this.props.route.params.review_body;
-            const rev_id = JSON.stringify(this.props.route.params.review_id);
-            const ov_rating = this.props.route.params.overall_rating;
-            const pr_rating = this.props.route.params.price_rating;
-            const qu_rating = this.props.route.params.quality_rating;
-            const cl_rating = this.props.route.params.clenliness_rating;
-            const user_rev = JSON.parse(await AsyncStorage.getItem('@reviews'))
-
-            this.setState({ user_id: us_id })
-            console.log(this.state.user_id)
-            this.setState({ location_id: loc_id })
-            this.setState({ review_body: rev_body })
-            this.setState({ review_id: rev_id })
-            this.setState({ overall_rating: ov_rating })
-            this.setState({ price_rating: pr_rating })
-            this.setState({ quality_rating: qu_rating })
-            this.setState({ clenliness_rating: cl_rating })
-            this.setState({ user_reviews: user_rev })
-            this.isYourReview();
-            this.setState({ isLoading: false })
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                this.setState({ isLoading: true })
+                this.setState({ yourReview: false })
+                const us_id = await AsyncStorage.getItem('@user_id')
+                const loc_id = this.props.route.params.location_id;
+                const rev_body = this.props.route.params.review_body;
+                const rev_id = JSON.stringify(this.props.route.params.review_id);
+                const ov_rating = this.props.route.params.overall_rating;
+                const pr_rating = this.props.route.params.price_rating;
+                const qu_rating = this.props.route.params.quality_rating;
+                const cl_rating = this.props.route.params.clenliness_rating;
+                const likes = this.props.route.params.likes;
+                const user_rev = JSON.parse(await AsyncStorage.getItem('@reviews'))
+                this.setState({ likes: likes})
+                this.setState({ user_id: us_id })
+                this.setState({ location_id: loc_id })
+                this.setState({ review_body: rev_body })
+                this.setState({ review_id: rev_id })
+                this.setState({ overall_rating: ov_rating })
+                this.setState({ price_rating: pr_rating })
+                this.setState({ quality_rating: qu_rating })
+                this.setState({ clenliness_rating: cl_rating })
+                this.setState({ user_reviews: user_rev })
+                this.isYourReview();
+                this.setState({ isLoading: false })
+            }
         });
     }
 
@@ -289,8 +332,8 @@ class Review extends Component {
     render() {
         if (this.state.isLoading) {
             return (
-                <View>
-                    <ActivityIndicator size="large"/>
+                <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
                 </View>
             )
         }
@@ -298,28 +341,28 @@ class Review extends Component {
             if (this.state.yourReview == true) {
                 return (
                     <View style={styles.container}>
-                        <Text>Your Review!</Text>
-                        <Text>{this.state.location_id}</Text>
-                        <Text>Review ID: {this.state.review_id}</Text>
-                        <Text>Total Likes : {this.state.totalLikes}</Text>
-                        <Text>Have you liked : {JSON.stringify(this.state.user_liked)}</Text>
+                        <Text>Likes : {this.state.likes}</Text>
+                        <Text>Overall Rating</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.overall_rating}
                             showRating={false}
                             isDisabled={true}
                         />
+                        <Text>Price Rating</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.price_rating}
                             showRating={false}
                             isDisabled={true}
                         />
+                        <Text>Quality Rating</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.quality_rating}
                             showRating={false}
                             isDisabled={true} />
+                        <Text>Clenliness Rating</Text>
                         <AirbnbRating
                             size={15}
                             defaultRating={this.state.clenliness_rating}

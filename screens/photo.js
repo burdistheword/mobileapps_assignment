@@ -12,17 +12,24 @@ class Photo extends Component {
             url: '',
             image: [],
             imagePassed: false,
-            review_id:0
+            review_id: 0
         }
     }
 
-    componentDidMount(){
+    componentDidMount() {
+
         this.focus = this.props.navigation.addListener('focus', async () => {
-            const review_id = this.props.route.params.review_id;
-            this.setState({review_id:review_id})
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                const review_id = this.props.route.params.review_id;
+                this.setState({ review_id: review_id })
+            }
         });
     }
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.focus();
     }
 
@@ -48,17 +55,17 @@ class Photo extends Component {
         );
     }
 
-    
-        takePicture = async function (camera) {
-            const options = { quality: 0.5, base64: true };
-            const data = await camera.takePictureAsync(options);
-            this.setState({url:data.url})
-            this.setState({image:data})
-            this.setState({imagePassed:true})
-            this.props.navigation.navigate("EditReview", { image: data , url: data.uri , previous_review_id: this.state.review_id })
-            console.log(data.uri);
-        };
-    
+
+    takePicture = async function (camera) {
+        const options = { quality: 0.5, base64: true };
+        const data = await camera.takePictureAsync(options);
+        this.setState({ url: data.url })
+        this.setState({ image: data })
+        this.setState({ imagePassed: true })
+        this.props.navigation.navigate("EditReview", { image: data, url: data.uri, previous_review_id: this.state.review_id })
+        console.log(data.uri);
+    };
+
 
 }
 

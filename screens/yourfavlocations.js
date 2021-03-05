@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { Rating, AirbnbRating } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -17,49 +17,55 @@ class YourFavLocations extends Component {
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            this.setState({ isLoading: true })
-            fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                this.setState({ isLoading: true })
+                fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Authorization": await AsyncStorage.getItem('@session_token')
 
-                },
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            return response.json();
+                    },
+                })
+                    .then(
+                        (response) => {
+                            if (response.status === 200) {
+                                return response.json();
+                            }
+                            else if (response.status === 401) {
+                                throw 'Unauthorized User Details'
+                            }
+                            else if (response.status === 404) {
+                                throw 'Not Found'
+                            }
+                            else {
+                                throw 'Server Error'
+                            }
                         }
-                        else if (response.status === 401) {
-                            throw 'Unauthorized User Details'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
-                        }
-                        else {
-                            throw 'Server Error'
-                        }
-                    }
-                )
-                .then(
-                    async (rjson) => {
-                        //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-                        const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
+                    )
+                    .then(
+                        async (rjson) => {
+                            //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+                            const jsonFavLoc = JSON.stringify(rjson.favourite_locations)
 
-                        await AsyncStorage.setItem('@favourite_location', jsonFavLoc)
+                            await AsyncStorage.setItem('@favourite_location', jsonFavLoc)
 
-                        this.setState({ favourite_locations: rjson.favourite_locations })
+                            this.setState({ favourite_locations: rjson.favourite_locations })
 
-                        this.setState({ isLoading: false })
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
+                            this.setState({ isLoading: false })
+                        }
+                    )
+                    .catch(
+                        (error) => {
+                            console.log(error)
+                            ToastAndroid.show(error, ToastAndroid.SHORT)
+                        }
+                    )
+            }
         });
     }
 
@@ -69,8 +75,8 @@ class YourFavLocations extends Component {
     render() {
         if (this.state.isLoading) {
             return (
-                <View>
-                    <ActivityIndicator size="large"/>
+                <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                        <ActivityIndicator size="large" color="#0000ff" />
                 </View>
             )
         }

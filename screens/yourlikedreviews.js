@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar,ToastAndroid,ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView, FlatList, StyleSheet, StatusBar, ToastAndroid, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class YourLikedReviews extends Component {
@@ -16,48 +16,54 @@ class YourLikedReviews extends Component {
 
     async componentDidMount() {
         this.focus = this.props.navigation.addListener('focus', async () => {
-            this.setState({isLoading: true})
-            fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    "X-Authorization": await AsyncStorage.getItem('@session_token')
+            const value = await AsyncStorage.getItem('@session_token')
+            if (value == null) {
+                this.props.navigation.navigate('Login')
+            }
+            else {
+                this.setState({ isLoading: true })
+                fetch('http://10.0.2.2:3333/api/1.0.0/user/' + await AsyncStorage.getItem('@user_id'), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "X-Authorization": await AsyncStorage.getItem('@session_token')
 
-                },
-            })
-                .then(
-                    (response) => {
-                        if (response.status === 200) {
-                            return response.json();
+                    },
+                })
+                    .then(
+                        (response) => {
+                            if (response.status === 200) {
+                                return response.json();
+                            }
+                            else if (response.status === 401) {
+                                throw 'Unauthorized User Details'
+                            }
+                            else if (response.status === 404) {
+                                throw 'Not Found'
+                            }
+                            else {
+                                throw 'Server Error'
+                            }
                         }
-                        else if (response.status === 401) {
-                            throw 'Unauthorized User Details'
-                        }
-                        else if (response.status === 404) {
-                            throw 'Not Found'
-                        }
-                        else {
-                            throw 'Server Error'
-                        }
-                    }
-                )
-                .then(
-                    async (rjson) => {
-                        //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
-                        this.setState({ liked_reviews: rjson.liked_reviews })
+                    )
+                    .then(
+                        async (rjson) => {
+                            //ToastAndroid.show(JSON.stringify(response),ToastAndroid.SHORT)
+                            this.setState({ liked_reviews: rjson.liked_reviews })
 
-                        const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
-                        await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
+                            const jsonLikedRev = JSON.stringify(rjson.liked_reviews)
+                            await AsyncStorage.setItem('@liked_reviews', jsonLikedRev)
 
-                        this.setState({ isLoading: false })
-                    }
-                )
-                .catch(
-                    (error) => {
-                        console.log(error)
-                        ToastAndroid.show(error, ToastAndroid.SHORT)
-                    }
-                )
+                            this.setState({ isLoading: false })
+                        }
+                    )
+                    .catch(
+                        (error) => {
+                            console.log(error)
+                            ToastAndroid.show(error, ToastAndroid.SHORT)
+                        }
+                    )
+            }
         });
     }
 
@@ -67,9 +73,9 @@ class YourLikedReviews extends Component {
     render() {
         if (this.state.isLoading) {
             return (
-                <View>
-                    <ActivityIndicator size="large"/>
-                </View>
+                <View style={{flex: 1, justifyContent: 'center',flexDirection:'row'}}>
+                <ActivityIndicator size="large" color="#0000ff" />
+        </View>
             )
         }
         else {
